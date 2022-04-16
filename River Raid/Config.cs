@@ -7,6 +7,7 @@ public class Config
     public static float BG_speed = 4f;
     public static string ContentRootDirectory = "Content";
     public static int PlaneMovementSpeed = 4;
+    public static float ProjectileSpeed = 6f;
     //public static float FuelSpeed = 0.1f;
     public static float FuelSpeed = 1.1f;
 }

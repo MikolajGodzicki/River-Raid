@@ -18,13 +18,16 @@ namespace River_Ride___MG
 
         #region Player
         private Texture2D Plane;
-        private Vector2 Plane_Position = new Vector2(500f, 500f);
+        private Vector2 PlanePosition = new Vector2(500f, 500f);
 
-        float time, delay = 100f;
-        int frame;
+        float AnimationTime, AnimationDelay = 100f;
+        int AnimationFrame;
         Rectangle PlaneAnimation;
 
         bool CanGoLeft = true, CanGoRight = true;
+
+        private List<Projectile> Projectiles = new List<Projectile>();
+        float ProjectileTime, ProjectileDelay = 800f;
         #endregion
 
         #region Textures
@@ -40,6 +43,8 @@ namespace River_Ride___MG
 
         private Texture2D GameOverText;
         private Rectangle GameOverTextAnimation;
+
+        private Texture2D ProjectileTexture;
         #endregion
 
         public Main()
@@ -67,6 +72,7 @@ namespace River_Ride___MG
             }
             Shadow = Content.Load<Texture2D>("Shadow");
             Plane = Content.Load<Texture2D>("Plane");
+            ProjectileTexture = Content.Load<Texture2D>("Projectile");
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
             UI = Content.Load<Texture2D>("UI");
             GameOverText = Content.Load<Texture2D>("GameOver");
@@ -85,56 +91,72 @@ namespace River_Ride___MG
             KeyboardState InputKey = Keyboard.GetState();
             if (!isExploding) {
                 if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
-                    Plane_Position.X -= Config.PlaneMovementSpeed;
+                    PlanePosition.X -= Config.PlaneMovementSpeed;
                 } else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight) {
-                    Plane_Position.X += Config.PlaneMovementSpeed;
+                    PlanePosition.X += Config.PlaneMovementSpeed;
                 }
             }
 
-            if (Plane_Position.X <= 100)
+            if (PlanePosition.X <= 100)
                 CanGoLeft = false;
             else 
                 CanGoLeft = true;
 
-            if (Plane_Position.X >= 830)
+            if (PlanePosition.X >= 830)
                 CanGoRight = false;
             else
                 CanGoRight = true;
             // Movement
 
             // Animation
-
-            time += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (time >= delay) {
-                if (isExploding && frame >= 3) {
+            AnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (AnimationTime >= AnimationDelay) {
+                if (isExploding && AnimationFrame >= 3) {
                     isExploding = false;
                     isExploded = true;
                 }
                 if (isExploded) {
-                    delay = 500f;
+                    AnimationDelay = 500f;
                 }
                    
-                if (frame >= 3) {
-                    frame = 0;
+                if (AnimationFrame >= 3) {
+                    AnimationFrame = 0;
                 } else {
-                    frame++;
+                    AnimationFrame++;
                 }
                 
-                time = 0;
+                AnimationTime = 0;
             }
 
+            
             foreach (Background item in Backgrounds) {
                 item.UpdatePosition();
             }
 
             Fuel.UpdateFuelSpend();
+            foreach (Projectile item in Projectiles)
+                item.UpdateProjectile();
 
             if (InputKey.IsKeyDown(Keys.J))
                 Fuel.AddFuel(20f);
 
-            PlaneAnimation = new Rectangle(Plane.Width / 4 * frame, 0, Plane.Width/4, Plane.Height);
-            ExplosionAnimation = new Rectangle(ExplosionEffect.Width / 4 * frame, 0, ExplosionEffect.Width/4, ExplosionEffect.Height);
-            GameOverTextAnimation = new Rectangle(GameOverText.Width / 4 * frame, 0, GameOverText.Width/4, GameOverText.Height);
+            ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (ProjectileTime >= ProjectileDelay) {
+                if (InputKey.IsKeyDown(Keys.F)) { 
+                    Projectiles.Add(new Projectile(ProjectileTexture, PlanePosition + new Vector2(40f, 0f)));
+                    ProjectileTime = 0;
+                }
+            }
+
+            for (int i = 0; i < Projectiles.Count; i++) {
+                if (Projectiles[i].ProjectilePosition.Y < -20f) {
+                    Projectiles.RemoveAt(i);
+                } 
+            }
+
+            PlaneAnimation = new Rectangle(Plane.Width / 4 * AnimationFrame, 0, Plane.Width/4, Plane.Height);
+            ExplosionAnimation = new Rectangle(ExplosionEffect.Width / 4 * AnimationFrame, 0, ExplosionEffect.Width/4, ExplosionEffect.Height);
+            GameOverTextAnimation = new Rectangle(GameOverText.Width / 4 * AnimationFrame, 0, GameOverText.Width/4, GameOverText.Height);
             // Animation
 
             base.Update(gameTime);
@@ -147,25 +169,30 @@ namespace River_Ride___MG
             foreach (Background item in Backgrounds) {
                 _spriteBatch.Draw(item.BG_texture, item.BG_position, new Rectangle(0, 0, item.BG_texture.Width, item.BG_texture.Height), Color.White);
             }
+
+            foreach (Projectile item in Projectiles) {
+                _spriteBatch.Draw(item.ProjectileTexture, item.ProjectilePosition, Color.White);
+            }
+            
             if (isExploded)
                 _spriteBatch.Draw(GameOverText, new Vector2(), GameOverTextAnimation, Color.White);
             if (!isExploding && !isExploded)
-                _spriteBatch.Draw(Plane, Plane_Position, PlaneAnimation, Color.White);
+                _spriteBatch.Draw(Plane, PlanePosition, PlaneAnimation, Color.White);
             if (isExploding)
-                _spriteBatch.Draw(ExplosionEffect, Plane_Position - new Vector2(95f), ExplosionAnimation, Color.White);
+                _spriteBatch.Draw(ExplosionEffect, PlanePosition - new Vector2(95f), ExplosionAnimation, Color.White);
             _spriteBatch.Draw(Shadow, new Vector2(), Color.White);
+            
             _spriteBatch.Draw(UI, new Vector2(), Color.White);
             _spriteBatch.Draw(Fuel.Fuel_Pointer, Fuel.position, Color.White);
             _spriteBatch.Draw(Fuel.Fuel_UI, new Vector2(), Color.White);
             
             _spriteBatch.End();
 
-
             base.Draw(gameTime);
         }
 
         public void ExplodePlane() {
-            frame = 0;
+            AnimationFrame = 0;
             isExploding = true;
             Config.BG_speed = 0f;
         }
