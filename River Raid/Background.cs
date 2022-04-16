@@ -14,5 +14,12 @@ namespace River_Raid {
             this.BG_texture = BG_texture;
             this.id = id;
         }
+
+        public void UpdatePosition() {
+            BG_position.Y += Config.BG_speed;
+            if (BG_position.Y >= BG_texture.Height) {
+                BG_position.Y = -BG_texture.Height;
+            }
+        }
     }
 }

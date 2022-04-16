@@ -18,7 +18,7 @@ namespace River_Ride___MG
 
         #region Player
         private Texture2D Plane;
-        private Vector2 Plane_Position = new Vector2(500f, 600f);
+        private Vector2 Plane_Position = new Vector2(500f, 500f);
 
         float time, delay = 100f;
         int frame;
@@ -30,6 +30,13 @@ namespace River_Ride___MG
         #region Textures
         private List<Background> Backgrounds = new List<Background>();
         private Texture2D Shadow;
+
+        private Texture2D UI;
+        private FuelPtr Fuel;
+        private Vector2 FuelPosition = new Vector2(320f, 689f);
+        bool isExploding = false, isExploded = false;
+        private Texture2D ExplosionEffect;
+        private Rectangle ExplosionAnimation;
         #endregion
 
         public Main()
@@ -57,6 +64,10 @@ namespace River_Ride___MG
             }
             Shadow = Content.Load<Texture2D>("Shadow");
             Plane = Content.Load<Texture2D>("Plane");
+            ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
+            UI = Content.Load<Texture2D>("UI");
+            Fuel = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
+            Fuel.OnFuelEmpty += ExplodePlane;
 
             Backgrounds[0].BG_position = new Vector2(Backgrounds[0].BG_position.X, -Backgrounds[0].BG_texture.Height);
         }
@@ -66,9 +77,6 @@ namespace River_Ride___MG
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Dodać ruszanie samolotem
-
-            Debug.WriteLine(Plane_Position.X.ToString());
             // Movement
             KeyboardState InputKey = Keyboard.GetState();
             if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
@@ -89,8 +97,11 @@ namespace River_Ride___MG
             // Movement
 
             // Animation
+
             time += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (time >= delay) {
+                if (isExploding && frame >= 3)
+                    isExploding = false;
                 if (frame >= 3) {
                     frame = 0;
                 } else {
@@ -100,9 +111,17 @@ namespace River_Ride___MG
                 time = 0;
             }
 
-            UpdateBackgroundPosition();
+            foreach (Background item in Backgrounds) {
+                item.UpdatePosition();
+            }
+
+            Fuel.UpdateFuelSpend();
+
+            if (InputKey.IsKeyDown(Keys.J))
+                Fuel.AddFuel(20f);
 
             PlaneAnimation = new Rectangle(Plane.Width / 4 * frame, 0, Plane.Width/4, Plane.Height);
+            ExplosionAnimation = new Rectangle(ExplosionEffect.Width / 4 * frame, 0, ExplosionEffect.Width/4, ExplosionEffect.Height);
             // Animation
 
             base.Update(gameTime);
@@ -115,8 +134,14 @@ namespace River_Ride___MG
             foreach (Background item in Backgrounds) {
                 _spriteBatch.Draw(item.BG_texture, item.BG_position, new Rectangle(0, 0, item.BG_texture.Width, item.BG_texture.Height), Color.White);
             }
-            _spriteBatch.Draw(Plane, Plane_Position, PlaneAnimation, Color.White);
+            if (!isExploded)
+                _spriteBatch.Draw(Plane, Plane_Position, PlaneAnimation, Color.White);
+            if (isExploding)
+                _spriteBatch.Draw(ExplosionEffect, Plane_Position - new Vector2(95f), ExplosionAnimation, Color.White);
             _spriteBatch.Draw(Shadow, new Vector2(), Color.White);
+            _spriteBatch.Draw(UI, new Vector2(), Color.White);
+            _spriteBatch.Draw(Fuel.Fuel_Pointer, Fuel.position, Color.White);
+            _spriteBatch.Draw(Fuel.Fuel_UI, new Vector2(), Color.White);
             
             _spriteBatch.End();
 
@@ -124,13 +149,11 @@ namespace River_Ride___MG
             base.Draw(gameTime);
         }
 
-        protected void UpdateBackgroundPosition() {
-            foreach (Background item in Backgrounds) {
-                item.BG_position.Y += Config.BG_speed;
-                if (item.BG_position.Y >= item.BG_texture.Height) {
-                    item.BG_position.Y = -item.BG_texture.Height;
-                }
-            }
+        public void ExplodePlane() {
+            frame = 0;
+            isExploding = true;
+            isExploded = true;
+            Config.BG_speed = 0f;
         }
     }
 }
