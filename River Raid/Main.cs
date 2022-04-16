@@ -37,6 +37,9 @@ namespace River_Ride___MG
         bool isExploding = false, isExploded = false;
         private Texture2D ExplosionEffect;
         private Rectangle ExplosionAnimation;
+
+        private Texture2D GameOverText;
+        private Rectangle GameOverTextAnimation;
         #endregion
 
         public Main()
@@ -66,6 +69,7 @@ namespace River_Ride___MG
             Plane = Content.Load<Texture2D>("Plane");
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
             UI = Content.Load<Texture2D>("UI");
+            GameOverText = Content.Load<Texture2D>("GameOver");
             Fuel = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
             Fuel.OnFuelEmpty += ExplodePlane;
 
@@ -79,10 +83,12 @@ namespace River_Ride___MG
 
             // Movement
             KeyboardState InputKey = Keyboard.GetState();
-            if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
-                Plane_Position.X -= Config.PlaneMovementSpeed;
-            } else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight) {
-                Plane_Position.X += Config.PlaneMovementSpeed;
+            if (!isExploding) {
+                if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
+                    Plane_Position.X -= Config.PlaneMovementSpeed;
+                } else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight) {
+                    Plane_Position.X += Config.PlaneMovementSpeed;
+                }
             }
 
             if (Plane_Position.X <= 100)
@@ -100,8 +106,14 @@ namespace River_Ride___MG
 
             time += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (time >= delay) {
-                if (isExploding && frame >= 3)
+                if (isExploding && frame >= 3) {
                     isExploding = false;
+                    isExploded = true;
+                }
+                if (isExploded) {
+                    delay = 500f;
+                }
+                   
                 if (frame >= 3) {
                     frame = 0;
                 } else {
@@ -122,6 +134,7 @@ namespace River_Ride___MG
 
             PlaneAnimation = new Rectangle(Plane.Width / 4 * frame, 0, Plane.Width/4, Plane.Height);
             ExplosionAnimation = new Rectangle(ExplosionEffect.Width / 4 * frame, 0, ExplosionEffect.Width/4, ExplosionEffect.Height);
+            GameOverTextAnimation = new Rectangle(GameOverText.Width / 4 * frame, 0, GameOverText.Width/4, GameOverText.Height);
             // Animation
 
             base.Update(gameTime);
@@ -134,7 +147,9 @@ namespace River_Ride___MG
             foreach (Background item in Backgrounds) {
                 _spriteBatch.Draw(item.BG_texture, item.BG_position, new Rectangle(0, 0, item.BG_texture.Width, item.BG_texture.Height), Color.White);
             }
-            if (!isExploded)
+            if (isExploded)
+                _spriteBatch.Draw(GameOverText, new Vector2(), GameOverTextAnimation, Color.White);
+            if (!isExploding && !isExploded)
                 _spriteBatch.Draw(Plane, Plane_Position, PlaneAnimation, Color.White);
             if (isExploding)
                 _spriteBatch.Draw(ExplosionEffect, Plane_Position - new Vector2(95f), ExplosionAnimation, Color.White);
@@ -152,7 +167,6 @@ namespace River_Ride___MG
         public void ExplodePlane() {
             frame = 0;
             isExploding = true;
-            isExploded = true;
             Config.BG_speed = 0f;
         }
     }
