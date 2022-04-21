@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using River_Raid;
+using River_Raid.Classes;
 
 namespace River_Ride___MG
 {
@@ -28,6 +29,10 @@ namespace River_Ride___MG
 
         private List<Projectile> Projectiles = new List<Projectile>();
         float ProjectileTime, ProjectileDelay = 800f;
+
+        private Texture2D PlaneEnemy;
+        private List<Enemy> Enemies = new List<Enemy>();
+        float EnemySpawnTime, EnemySpawnDelay = 2300f;
         #endregion
 
         #region Textures
@@ -72,6 +77,7 @@ namespace River_Ride___MG
             }
             Shadow = Content.Load<Texture2D>("Shadow");
             Plane = Content.Load<Texture2D>("Plane");
+            PlaneEnemy = Content.Load<Texture2D>("Plane_Enemy");
             ProjectileTexture = Content.Load<Texture2D>("Projectile");
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
             UI = Content.Load<Texture2D>("UI");
@@ -137,6 +143,18 @@ namespace River_Ride___MG
             foreach (Projectile item in Projectiles)
                 item.UpdateProjectile();
 
+            foreach (Enemy item in Enemies)
+                item.UpdateEnemy();
+
+            for (int y = 0; y < Projectiles.Count; y++) {
+                for (int i = 0; i < Enemies.Count; i++) {
+                    if (Projectiles[y].CheckCollision(Enemies[i].EnemyTexture, Enemies[i].EnemyPosition, 4)) { 
+                        Enemies.RemoveAt(i);
+                        Projectiles.RemoveAt(y);
+                    }
+                }
+            }
+
             if (InputKey.IsKeyDown(Keys.J))
                 Fuel.AddFuel(20f);
 
@@ -148,10 +166,23 @@ namespace River_Ride___MG
                 }
             }
 
+            EnemySpawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (EnemySpawnTime >= EnemySpawnDelay) {
+                Enemies.Add(new Enemy(PlaneEnemy));
+                EnemySpawnTime = 0;
+            }
+            
+
             for (int i = 0; i < Projectiles.Count; i++) {
                 if (Projectiles[i].ProjectilePosition.Y < -20f) {
                     Projectiles.RemoveAt(i);
                 } 
+            }
+
+            for (int i = 0; i < Enemies.Count; i++) {
+                if (Enemies[i].EnemyPosition.Y > Config.PrefferedHeight + 20f) {
+                    Enemies.RemoveAt(i);
+                }
             }
 
             PlaneAnimation = new Rectangle(Plane.Width / 4 * AnimationFrame, 0, Plane.Width/4, Plane.Height);
@@ -172,6 +203,10 @@ namespace River_Ride___MG
 
             foreach (Projectile item in Projectiles) {
                 _spriteBatch.Draw(item.ProjectileTexture, item.ProjectilePosition, Color.White);
+            }
+
+            foreach (Enemy item in Enemies) {
+                _spriteBatch.Draw(item.EnemyTexture, item.EnemyPosition, PlaneAnimation, Color.White);
             }
             
             if (isExploded)

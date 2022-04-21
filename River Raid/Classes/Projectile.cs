@@ -16,7 +16,11 @@ namespace River_Raid {
             ProjectilePosition.Y -= Config.ProjectileSpeed;
         }
 
-        public bool CheckCollision(Texture2D OtherTexture, Vector2 OtherPosition) {
+        public bool CheckCollision(Texture2D OtherTexture, Vector2 OtherPosition, int FrameCount = 1) {
+            if (ProjectilePosition.Y <= OtherPosition.Y &&
+                ProjectilePosition.X >= OtherPosition.X &&
+                ProjectilePosition.X + ProjectileTexture.Width <= OtherPosition.X + (OtherTexture.Width / FrameCount))
+                return true;
             return false;
         }
     }
