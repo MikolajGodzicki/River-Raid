@@ -49,6 +49,18 @@
 /processorParam:TextureFormat=Color
 /build:ExplosionEffect.png
 
+#begin Fuel_Barrel.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Fuel_Barrel.png
+
 #begin Fuel_Level.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -144,4 +156,11 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:UI.png
+
+#begin UI_Font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:UI_Font.spritefont
 

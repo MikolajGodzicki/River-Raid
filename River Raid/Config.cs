@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public class Config
 {
     public static int PrefferedHeight = 768;
@@ -9,8 +11,12 @@ public class Config
     public static float PlaneMovementSpeed = 4f;
     public static float ProjectileSpeed = 6f;
     public static float EnemySpeed = 5f;
-    public static int MinimumEnemyPos = 300;//100;
-    public static int MaximumEnemyPos = 350;//830;
-    //public static float FuelSpeed = 0.1f;
-    public static float FuelSpeed = 1.1f;
+    public static int MinimumObjectPos = 200;
+    public static int MaximumObjectPos = 750;
+    public static float FuelSpeed = 0.1f;
+    public static float FuelBarrelSpeed = 4f;
+    public static int levelUpScore = 2500;
+
+    public static List<int> Points = new List<int> { 50, 100, 150, 250};
+    public static List<int> Fuel = new List<int> { 10, 15, 20, 25};
 }

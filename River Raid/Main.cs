@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
@@ -6,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using River_Raid;
 using River_Raid.Classes;
+using System.Text;
 
 namespace River_Ride___MG
 {
@@ -13,13 +15,15 @@ namespace River_Ride___MG
     {
         #region Utils
         private GraphicsDeviceManager _graphics;
-        
+        private Random Random = new Random();
         private SpriteBatch _spriteBatch;
+        private SpriteFont UI_Font;
         #endregion
 
         #region Player
         private Texture2D Plane;
         private Vector2 PlanePosition = new Vector2(500f, 500f);
+        private int Score, Level, tempLevel;
 
         float AnimationTime, AnimationDelay = 100f;
         int AnimationFrame;
@@ -27,35 +31,39 @@ namespace River_Ride___MG
 
         bool CanGoLeft = true, CanGoRight = true;
 
+        private Texture2D ProjectileTexture;
         private List<Projectile> Projectiles = new List<Projectile>();
         float ProjectileTime, ProjectileDelay = 800f;
 
         private Texture2D PlaneEnemy;
         private List<Enemy> Enemies = new List<Enemy>();
         float EnemySpawnTime, EnemySpawnDelay = 2300f;
+
+        private Texture2D FuelBarrel;
+        private List<FuelBarrel> FuelBarrels = new List<FuelBarrel>();
+        float FuelBarrelSpawnTime, FuelBarrelSpawnDelay = 1400f;
         #endregion
 
-        #region Textures
+        #region Other
         private List<Background> Backgrounds = new List<Background>();
         private Texture2D Shadow;
 
         private Texture2D UI;
         private FuelPtr Fuel;
         private Vector2 FuelPosition = new Vector2(320f, 689f);
+
         bool isExploding = false, isExploded = false;
         private Texture2D ExplosionEffect;
         private Rectangle ExplosionAnimation;
 
         private Texture2D GameOverText;
         private Rectangle GameOverTextAnimation;
-
-        private Texture2D ProjectileTexture;
         #endregion
 
         public Main()
         {
             _graphics = new GraphicsDeviceManager(this);
-            
+            LoadScore();
             Content.RootDirectory = Config.ContentRootDirectory;
             IsMouseVisible = true;
         }
@@ -82,16 +90,24 @@ namespace River_Ride___MG
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
             UI = Content.Load<Texture2D>("UI");
             GameOverText = Content.Load<Texture2D>("GameOver");
+            UI_Font = Content.Load<SpriteFont>("UI_Font");
+            FuelBarrel = Content.Load<Texture2D>("Fuel_Barrel");
             Fuel = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
             Fuel.OnFuelEmpty += ExplodePlane;
 
-            Backgrounds[0].BG_position = new Vector2(Backgrounds[0].BG_position.X, -Backgrounds[0].BG_texture.Height);
+            Backgrounds[0].position = new Vector2(Backgrounds[0].position.X, -Backgrounds[0].texture.Height);
         }
 
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            if (tempLevel >= Config.levelUpScore) {
+                tempLevel = 0;
+                Level++;
+            }
+                
 
             // Movement
             KeyboardState InputKey = Keyboard.GetState();
@@ -129,28 +145,38 @@ namespace River_Ride___MG
                     AnimationFrame = 0;
                 } else {
                     AnimationFrame++;
+                    AddScore(50);
                 }
                 
                 AnimationTime = 0;
             }
 
-            
-            foreach (Background item in Backgrounds) {
-                item.UpdatePosition();
-            }
-
             Fuel.UpdateFuelSpend();
+
+            foreach (Background item in Backgrounds) 
+                item.UpdatePosition();
+
             foreach (Projectile item in Projectiles)
                 item.UpdateProjectile();
 
             foreach (Enemy item in Enemies)
-                item.UpdateEnemy();
+                item.UpdateEnemy(gameTime);
+
+            foreach (FuelBarrel item in FuelBarrels)
+                item.UpdateFuelBarrel();
 
             for (int y = 0; y < Projectiles.Count; y++) {
                 for (int i = 0; i < Enemies.Count; i++) {
-                    if (Projectiles[y].CheckCollision(Enemies[i].EnemyTexture, Enemies[i].EnemyPosition, 4)) { 
-                        Enemies.RemoveAt(i);
-                        Projectiles.RemoveAt(y);
+                    if (Projectiles[y].CheckCollision(Enemies[i].texture, Enemies[i].position, 4)) {
+                        Enemies[i].IsExploding = true;
+                        if (Enemies[i].IsExploding && !Enemies[i].IsExploded) {
+                            AddScore(Config.Points[Random.Next(Config.Points.Count)]);
+                            Projectiles.RemoveAt(y);
+                        }
+                            
+                        if (Enemies[i].IsExploded) 
+                            Enemies.RemoveAt(i);
+                        
                     }
                 }
             }
@@ -168,19 +194,24 @@ namespace River_Ride___MG
 
             EnemySpawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (EnemySpawnTime >= EnemySpawnDelay) {
-                Enemies.Add(new Enemy(PlaneEnemy));
+                Enemies.Add(new Enemy(PlaneEnemy, ExplosionEffect));
                 EnemySpawnTime = 0;
             }
-            
+
+            FuelBarrelSpawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (FuelBarrelSpawnTime >= FuelBarrelSpawnDelay) {
+                FuelBarrels.Add(new FuelBarrel(FuelBarrel));
+                FuelBarrelSpawnTime = 0;
+            }
 
             for (int i = 0; i < Projectiles.Count; i++) {
-                if (Projectiles[i].ProjectilePosition.Y < -20f) {
+                if (Projectiles[i].position.Y < -20f) {
                     Projectiles.RemoveAt(i);
                 } 
             }
 
             for (int i = 0; i < Enemies.Count; i++) {
-                if (Enemies[i].EnemyPosition.Y > Config.PrefferedHeight + 20f) {
+                if (Enemies[i].position.Y > Config.PrefferedHeight + 20f) {
                     Enemies.RemoveAt(i);
                 }
             }
@@ -193,20 +224,27 @@ namespace River_Ride___MG
             base.Update(gameTime);
         }
 
-        protected override void Draw(GameTime gameTime)
-        {
+        protected override void Draw(GameTime gameTime) {
             GraphicsDevice.Clear(Color.White);
-            _spriteBatch.Begin();
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
             foreach (Background item in Backgrounds) {
-                _spriteBatch.Draw(item.BG_texture, item.BG_position, new Rectangle(0, 0, item.BG_texture.Width, item.BG_texture.Height), Color.White);
+                _spriteBatch.Draw(item.texture, item.position, new Rectangle(0, 0, item.texture.Width, item.texture.Height), Color.White);
+            }
+
+            foreach (FuelBarrel item in FuelBarrels) {
+                _spriteBatch.Draw(item.texture, item.position, Color.White);
             }
 
             foreach (Projectile item in Projectiles) {
-                _spriteBatch.Draw(item.ProjectileTexture, item.ProjectilePosition, Color.White);
+                _spriteBatch.Draw(item.texture, item.position, Color.White);
             }
 
             foreach (Enemy item in Enemies) {
-                _spriteBatch.Draw(item.EnemyTexture, item.EnemyPosition, PlaneAnimation, Color.White);
+                if (item.IsExploding)
+                    item.ExplodePlane(_spriteBatch);
+
+                if (!item.IsExploding && !item.IsExploded)
+                    _spriteBatch.Draw(item.texture, item.position, PlaneAnimation, Color.White);
             }
             
             if (isExploded)
@@ -220,16 +258,44 @@ namespace River_Ride___MG
             _spriteBatch.Draw(UI, new Vector2(), Color.White);
             _spriteBatch.Draw(Fuel.Fuel_Pointer, Fuel.position, Color.White);
             _spriteBatch.Draw(Fuel.Fuel_UI, new Vector2(), Color.White);
+            _spriteBatch.DrawString(UI_Font, $"Wynik: {Score}", new Vector2(422f, 651f), Color.White);
+            _spriteBatch.DrawString(UI_Font, $"Poziom: {Level}", new Vector2(422f, 701f), Color.White);
             
             _spriteBatch.End();
 
             base.Draw(gameTime);
         }
-
         public void ExplodePlane() {
             AnimationFrame = 0;
             isExploding = true;
             Config.BG_speed = 0f;
+            Config.FuelBarrelSpeed = 0f;
+        }
+
+        protected override void OnExiting(object sender, EventArgs args) {
+            StreamWriter streamWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/MGRiverRideScore.txt");
+            streamWriter.WriteLine(Score.ToString());
+            streamWriter.WriteLine(Level.ToString());
+            streamWriter.WriteLine(tempLevel.ToString());
+            streamWriter.Close();
+            base.OnExiting(sender, args);
+        }
+
+        protected void LoadScore() {
+            try {
+                StreamReader streamReader = new StreamReader(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/MGRiverRideScore.txt");
+                int.TryParse(streamReader.ReadLine(), out Score);
+                int.TryParse(streamReader.ReadLine(), out Level);
+                int.TryParse(streamReader.ReadLine(), out tempLevel);
+                streamReader.Close();
+            } catch (FileNotFoundException ex) {
+                return;
+            }
+        }
+
+        protected void AddScore(int amount) {
+            Score += amount;
+            tempLevel += amount;
         }
     }
 }
