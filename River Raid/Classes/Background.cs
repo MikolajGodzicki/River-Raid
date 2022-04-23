@@ -8,6 +8,7 @@ namespace River_Raid {
     class Background {
         public Texture2D texture;
         public Vector2 position = new Vector2(-300f, 0f);
+        public int SpawnMinPosition, SpawnMaxPosition;
         public int id;
 
         public Background(Texture2D texture, int id) {
@@ -16,7 +17,7 @@ namespace River_Raid {
         }
 
         public void UpdatePosition() {
-            position.Y += Config.BG_speed;
+            position.Y += Config.BGMovementSpeed;
             if (position.Y >= texture.Height) {
                 position.Y = -texture.Height;
             }

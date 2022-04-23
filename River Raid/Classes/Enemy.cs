@@ -20,7 +20,7 @@ namespace River_Raid.Classes {
         }
 
         public void UpdateEnemy(GameTime gameTime) {
-            position.Y += Config.EnemySpeed;
+            position.Y += Config.EnemyMovementSpeed;
 
             if (IsExploding) {
                 AnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -39,7 +39,7 @@ namespace River_Raid.Classes {
             }
         }
 
-        public void ExplodePlane(SpriteBatch spriteBatch) {
+        public void Explode(SpriteBatch spriteBatch) {
             spriteBatch.Draw(ExplodeTexture, position - new Vector2(30f), ExplodeAnimation, Color.White, 0f, new Vector2(), 0.5f, SpriteEffects.None, 0f);
         }
     }

@@ -80,7 +80,7 @@ namespace River_Ride___MG
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            for (int i = 0; i < Config.BG_count; i++) {
+            for (int i = 0; i < Config.BGCount; i++) {
                 Backgrounds.Add(new Background(Content.Load<Texture2D>($"BG_{i+1}"), i));
             }
             Shadow = Content.Load<Texture2D>("Shadow");
@@ -145,7 +145,7 @@ namespace River_Ride___MG
                     AnimationFrame = 0;
                 } else {
                     AnimationFrame++;
-                    AddScore(50);
+                    AddScore(5);
                 }
                 
                 AnimationTime = 0;
@@ -163,23 +163,47 @@ namespace River_Ride___MG
                 item.UpdateEnemy(gameTime);
 
             foreach (FuelBarrel item in FuelBarrels)
-                item.UpdateFuelBarrel();
+                item.UpdateFuelBarrel(gameTime);
 
             for (int y = 0; y < Projectiles.Count; y++) {
                 for (int i = 0; i < Enemies.Count; i++) {
-                    if (Projectiles[y].CheckCollision(Enemies[i].texture, Enemies[i].position, 4)) {
+                    if (Projectiles[y].CheckCollision(Enemies[i].texture, Enemies[i].position)) {
                         Enemies[i].IsExploding = true;
                         if (Enemies[i].IsExploding && !Enemies[i].IsExploded) {
                             AddScore(Config.Points[Random.Next(Config.Points.Count)]);
                             Projectiles.RemoveAt(y);
+                            break;
                         }
                             
                         if (Enemies[i].IsExploded) 
                             Enemies.RemoveAt(i);
-                        
                     }
                 }
             }
+
+            for (int y = 0; y < Projectiles.Count; y++) { 
+                for (int i = 0; i < FuelBarrels.Count; i++) {
+                    if (Projectiles[y].CheckCollision(FuelBarrels[i].texture, FuelBarrels[i].position, 1)) {
+                        FuelBarrels[i].IsExploding = true;
+                        if (FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
+                            Projectiles.RemoveAt(y);
+                            break;
+                        }
+
+                        if (FuelBarrels[i].IsExploded)
+                            FuelBarrels.RemoveAt(i);
+                    }
+
+                }
+            }
+
+            for (int i = 0; i < FuelBarrels.Count; i++) {
+                if (FuelBarrels[i].CheckCollision(Plane, PlanePosition) && !FuelBarrels[i].IsExploding) {
+                    Fuel.AddFuel(FuelBarrels[i].GetFuelAmount());
+                    FuelBarrels.RemoveAt(i);
+                }
+            }
+            
 
             if (InputKey.IsKeyDown(Keys.J))
                 Fuel.AddFuel(20f);
@@ -200,7 +224,7 @@ namespace River_Ride___MG
 
             FuelBarrelSpawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (FuelBarrelSpawnTime >= FuelBarrelSpawnDelay) {
-                FuelBarrels.Add(new FuelBarrel(FuelBarrel));
+                FuelBarrels.Add(new FuelBarrel(FuelBarrel, ExplosionEffect));
                 FuelBarrelSpawnTime = 0;
             }
 
@@ -213,6 +237,12 @@ namespace River_Ride___MG
             for (int i = 0; i < Enemies.Count; i++) {
                 if (Enemies[i].position.Y > Config.PrefferedHeight + 20f) {
                     Enemies.RemoveAt(i);
+                }
+            }
+
+            for (int i = 0; i < FuelBarrels.Count; i++) {
+                if (FuelBarrels[i].position.Y > 700f) {
+                    FuelBarrels.RemoveAt(i);
                 }
             }
 
@@ -232,7 +262,11 @@ namespace River_Ride___MG
             }
 
             foreach (FuelBarrel item in FuelBarrels) {
-                _spriteBatch.Draw(item.texture, item.position, Color.White);
+                if (item.IsExploding)
+                    item.Explode(_spriteBatch);
+
+                if (!item.IsExploding && !item.IsExploded)
+                    _spriteBatch.Draw(item.texture, item.position, Color.White);
             }
 
             foreach (Projectile item in Projectiles) {
@@ -241,7 +275,7 @@ namespace River_Ride___MG
 
             foreach (Enemy item in Enemies) {
                 if (item.IsExploding)
-                    item.ExplodePlane(_spriteBatch);
+                    item.Explode(_spriteBatch);
 
                 if (!item.IsExploding && !item.IsExploded)
                     _spriteBatch.Draw(item.texture, item.position, PlaneAnimation, Color.White);
@@ -268,7 +302,7 @@ namespace River_Ride___MG
         public void ExplodePlane() {
             AnimationFrame = 0;
             isExploding = true;
-            Config.BG_speed = 0f;
+            Config.BGMovementSpeed = 0f;
             Config.FuelBarrelSpeed = 0f;
         }
 
