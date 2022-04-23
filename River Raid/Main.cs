@@ -21,15 +21,8 @@ namespace River_Ride___MG
         #endregion
 
         #region Player
-        private Texture2D Plane;
-        private Vector2 PlanePosition = new Vector2(500f, 500f);
+        Player Player;
         private int Score, Level, tempLevel;
-
-        float AnimationTime, AnimationDelay = 100f;
-        int AnimationFrame;
-        Rectangle PlaneAnimation;
-
-        bool CanGoLeft = true, CanGoRight = true;
 
         private Texture2D ProjectileTexture;
         private List<Projectile> Projectiles = new List<Projectile>();
@@ -52,9 +45,7 @@ namespace River_Ride___MG
         private FuelPtr Fuel;
         private Vector2 FuelPosition = new Vector2(320f, 689f);
 
-        bool isExploding = false, isExploded = false;
         private Texture2D ExplosionEffect;
-        private Rectangle ExplosionAnimation;
 
         private Texture2D GameOverText;
         private Rectangle GameOverTextAnimation;
@@ -84,7 +75,6 @@ namespace River_Ride___MG
                 Backgrounds.Add(new Background(Content.Load<Texture2D>($"BG_{i+1}"), i));
             }
             Shadow = Content.Load<Texture2D>("Shadow");
-            Plane = Content.Load<Texture2D>("Plane");
             PlaneEnemy = Content.Load<Texture2D>("Plane_Enemy");
             ProjectileTexture = Content.Load<Texture2D>("Projectile");
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
@@ -93,7 +83,13 @@ namespace River_Ride___MG
             UI_Font = Content.Load<SpriteFont>("UI_Font");
             FuelBarrel = Content.Load<Texture2D>("Fuel_Barrel");
             Fuel = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
-            Fuel.OnFuelEmpty += ExplodePlane;
+
+            Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect);
+
+            // Events
+            Fuel.OnFuelEmpty += Player.ExplodePlane;
+            Player.OnAnimationTick += AddScore;
+            // Events
 
             Backgrounds[0].position = new Vector2(Backgrounds[0].position.X, -Backgrounds[0].texture.Height);
         }
@@ -107,49 +103,12 @@ namespace River_Ride___MG
                 tempLevel = 0;
                 Level++;
             }
-                
 
-            // Movement
+
+            // Player Movement
             KeyboardState InputKey = Keyboard.GetState();
-            if (!isExploding) {
-                if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
-                    PlanePosition.X -= Config.PlaneMovementSpeed;
-                } else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight) {
-                    PlanePosition.X += Config.PlaneMovementSpeed;
-                }
-            }
-
-            if (PlanePosition.X <= 100)
-                CanGoLeft = false;
-            else 
-                CanGoLeft = true;
-
-            if (PlanePosition.X >= 830)
-                CanGoRight = false;
-            else
-                CanGoRight = true;
-            // Movement
-
-            // Animation
-            AnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (AnimationTime >= AnimationDelay) {
-                if (isExploding && AnimationFrame >= 3) {
-                    isExploding = false;
-                    isExploded = true;
-                }
-                if (isExploded) {
-                    AnimationDelay = 500f;
-                }
-                   
-                if (AnimationFrame >= 3) {
-                    AnimationFrame = 0;
-                } else {
-                    AnimationFrame++;
-                    AddScore(5);
-                }
-                
-                AnimationTime = 0;
-            }
+            Player.UpdatePlayer(InputKey, gameTime);
+            // Player Movement
 
             Fuel.UpdateFuelSpend();
 
@@ -198,12 +157,17 @@ namespace River_Ride___MG
             }
 
             for (int i = 0; i < FuelBarrels.Count; i++) {
-                if (FuelBarrels[i].CheckCollision(Plane, PlanePosition) && !FuelBarrels[i].IsExploding) {
+                if (FuelBarrels[i].CheckCollision(Player.texture, Player.position) && !FuelBarrels[i].IsExploding) {
                     Fuel.AddFuel(FuelBarrels[i].GetFuelAmount());
                     FuelBarrels.RemoveAt(i);
                 }
             }
-            
+
+            for (int i = 0; i < Enemies.Count; i++) {
+                if (Enemies[i].CheckCollision(Player.texture, Player.position)) {
+                    Player.Health--;
+                }
+            }
 
             if (InputKey.IsKeyDown(Keys.J))
                 Fuel.AddFuel(20f);
@@ -211,7 +175,7 @@ namespace River_Ride___MG
             ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (ProjectileTime >= ProjectileDelay) {
                 if (InputKey.IsKeyDown(Keys.F)) { 
-                    Projectiles.Add(new Projectile(ProjectileTexture, PlanePosition + new Vector2(40f, 0f)));
+                    Projectiles.Add(new Projectile(ProjectileTexture, Player.position + new Vector2(40f, 0f)));
                     ProjectileTime = 0;
                 }
             }
@@ -241,15 +205,12 @@ namespace River_Ride___MG
             }
 
             for (int i = 0; i < FuelBarrels.Count; i++) {
-                if (FuelBarrels[i].position.Y > 700f) {
+                if (FuelBarrels[i].position.Y > Config.PrefferedHeight + 20f) {
                     FuelBarrels.RemoveAt(i);
                 }
             }
 
-            PlaneAnimation = new Rectangle(Plane.Width / 4 * AnimationFrame, 0, Plane.Width/4, Plane.Height);
-            ExplosionAnimation = new Rectangle(ExplosionEffect.Width / 4 * AnimationFrame, 0, ExplosionEffect.Width/4, ExplosionEffect.Height);
-            GameOverTextAnimation = new Rectangle(GameOverText.Width / 4 * AnimationFrame, 0, GameOverText.Width/4, GameOverText.Height);
-            // Animation
+            GameOverTextAnimation = new Rectangle(GameOverText.Width / 4 * Player.AnimationFrame, 0, GameOverText.Width/4, GameOverText.Height);
 
             base.Update(gameTime);
         }
@@ -263,7 +224,7 @@ namespace River_Ride___MG
 
             foreach (FuelBarrel item in FuelBarrels) {
                 if (item.IsExploding)
-                    item.Explode(_spriteBatch);
+                    item.Explode(_spriteBatch, new Vector2(60f), 0.5f);
 
                 if (!item.IsExploding && !item.IsExploded)
                     _spriteBatch.Draw(item.texture, item.position, Color.White);
@@ -275,18 +236,19 @@ namespace River_Ride___MG
 
             foreach (Enemy item in Enemies) {
                 if (item.IsExploding)
-                    item.Explode(_spriteBatch);
+                    item.Explode(_spriteBatch, new Vector2(30f), 0.5f);
 
                 if (!item.IsExploding && !item.IsExploded)
-                    _spriteBatch.Draw(item.texture, item.position, PlaneAnimation, Color.White);
+                    _spriteBatch.Draw(item.texture, item.position, item.ObjectAnimation, Color.White);
             }
-            
-            if (isExploded)
+
+            if (Player.IsExploding)
+                Player.Explode(_spriteBatch, new Vector2(95f));
+            else if (Player.IsExploded)
                 _spriteBatch.Draw(GameOverText, new Vector2(), GameOverTextAnimation, Color.White);
-            if (!isExploding && !isExploded)
-                _spriteBatch.Draw(Plane, PlanePosition, PlaneAnimation, Color.White);
-            if (isExploding)
-                _spriteBatch.Draw(ExplosionEffect, PlanePosition - new Vector2(95f), ExplosionAnimation, Color.White);
+            else
+                _spriteBatch.Draw(Player.texture, Player.position, Player.ObjectAnimation, Color.White);
+
             _spriteBatch.Draw(Shadow, new Vector2(), Color.White);
             
             _spriteBatch.Draw(UI, new Vector2(), Color.White);
@@ -299,12 +261,7 @@ namespace River_Ride___MG
 
             base.Draw(gameTime);
         }
-        public void ExplodePlane() {
-            AnimationFrame = 0;
-            isExploding = true;
-            Config.BGMovementSpeed = 0f;
-            Config.FuelBarrelSpeed = 0f;
-        }
+        
 
         protected override void OnExiting(object sender, EventArgs args) {
             StreamWriter streamWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/MGRiverRideScore.txt");

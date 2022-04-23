@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using River_Raid.Classes;
 using System;
 
 namespace River_Raid {
-    class FuelPtr {
+    class FuelPtr : GameObject {
         public Texture2D Fuel_Pointer;
         public Texture2D Fuel_UI;
-        public Vector2 position;
         public int minFuel, maxFuel;
 
         bool isExploded = false;
