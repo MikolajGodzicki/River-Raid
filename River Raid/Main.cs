@@ -280,7 +280,7 @@ namespace River_Ride___MG
                     _spriteBatch.DrawString(LanaPixel_24, $"Wynik: {Score}", new Vector2(422f, 661f), Color.White);
                     _spriteBatch.DrawString(LanaPixel_24, $"Poziom: {Level}", new Vector2(422f, 701f), Color.White);
                     if (!Player.IsAlive)
-                        StartBlinkingGameOver(_spriteBatch, gameTime);
+                        StartBlinkingGameOver(gameTime);
                     #endregion
 
                     _spriteBatch.End();
@@ -335,7 +335,7 @@ namespace River_Ride___MG
 
 
         float OverallBlinkTime, BlinkTimes = 5, BlinkTime, BlinkDelay = 500f; 
-        protected void StartBlinkingGameOver(SpriteBatch _spritebatch, GameTime gameTime) {
+        protected void StartBlinkingGameOver(GameTime gameTime) {
             if (OverallBlinkTime < BlinkTimes * BlinkDelay * 2) {
                 BlinkTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 OverallBlinkTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
