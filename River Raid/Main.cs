@@ -157,7 +157,7 @@ namespace River_Ride___MG
             }
 
             for (int i = 0; i < FuelBarrels.Count; i++) {
-                if (FuelBarrels[i].CheckCollision(Player.texture, Player.position) && !FuelBarrels[i].IsExploding) {
+                if (FuelBarrels[i].CheckCollision(Player.texture, Player.position) && !FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
                     Fuel.AddFuel(FuelBarrels[i].GetFuelAmount());
                     FuelBarrels.RemoveAt(i);
                 }
@@ -168,9 +168,6 @@ namespace River_Ride___MG
                     Player.Health--;
                 }
             }
-
-            if (InputKey.IsKeyDown(Keys.J))
-                Fuel.AddFuel(20f);
 
             ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (ProjectileTime >= ProjectileDelay) {

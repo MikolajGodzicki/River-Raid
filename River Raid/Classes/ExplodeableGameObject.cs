@@ -18,11 +18,11 @@ namespace River_Raid.Classes {
 
         public event Action<int> OnAnimationTick;
 
-        public void Update(GameTime gameTime, int FrameCount = 4, int ExplosionFrameCount = 4) {
+        public void Update(GameTime gameTime, int FrameCountX = 4, int ExplosionFrameCountX = 4) {
             if (IsExploding) {
                 ExplosionAnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 if (ExplosionAnimationTime >= ExplosionAnimationDelay) {
-                    if (ExplosionAnimationFrame >= ExplosionFrameCount - 1) {
+                    if (ExplosionAnimationFrame >= ExplosionFrameCountX - 1) {
                         IsExploded = true;
                         IsExploding = false;
                     } else {
@@ -32,12 +32,12 @@ namespace River_Raid.Classes {
                     ExplosionAnimationTime = 0;
                 }
 
-                ExplodeAnimation = new Rectangle(ExplodeTexture.Width / ExplosionFrameCount * ExplosionAnimationFrame, 0, ExplodeTexture.Width / ExplosionFrameCount, ExplodeTexture.Height);
+                ExplodeAnimation = new Rectangle(ExplodeTexture.Width / ExplosionFrameCountX * ExplosionAnimationFrame, 0, ExplodeTexture.Width / ExplosionFrameCountX, ExplodeTexture.Height);
             }
 
             AnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (AnimationTime >= AnimationDelay) {
-                if (AnimationFrame >= FrameCount - 1) {
+                if (AnimationFrame >= FrameCountX - 1) {
                     AnimationFrame = 0;
                 } else {
                     AnimationFrame++;
@@ -47,7 +47,7 @@ namespace River_Raid.Classes {
                 AnimationTime = 0;
             }
 
-            ObjectAnimation = new Rectangle(texture.Width / FrameCount * AnimationFrame, 0, texture.Width / FrameCount, texture.Height);
+            ObjectAnimation = new Rectangle(texture.Width / FrameCountX * AnimationFrame, 0, texture.Width / FrameCountX, texture.Height);
         }
 
         public void Explode(SpriteBatch spriteBatch, Vector2 OffsetPosition = new Vector2(), float scale = 1f) {
