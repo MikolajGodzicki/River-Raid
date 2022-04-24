@@ -9,8 +9,11 @@ namespace River_Raid.Classes {
     class Player : ExplodeableGameObject {
         bool CanGoLeft = true, CanGoRight = true;
         public int AnimationFrame;
-
         public int Health;
+
+        float ProjectileTime, ProjectileDelay = 800f;
+
+        public event Action OnFireButtonClick;
 
         public Player(Texture2D texture, Texture2D ExplodeTexture) {
             this.texture = texture;
@@ -18,26 +21,21 @@ namespace River_Raid.Classes {
             this.ExplodeTexture = ExplodeTexture;
         }
         public void UpdatePlayer(KeyboardState InputKey, GameTime gameTime) {
-            
-            if (!IsExploding) {
+            if (IsAlive) {
                 if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
                     position.X -= Config.PlaneMovementSpeed;
                 } else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight) {
                     position.X += Config.PlaneMovementSpeed;
                 }
+
+                ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (ProjectileTime >= ProjectileDelay) {
+                    if (InputKey.IsKeyDown(Keys.F)) {
+                        OnFireButtonClick?.Invoke();
+                        ProjectileTime = 0;
+                    }
+                }
             }
-
-            /*
-            if (position.X <= 100)
-                CanGoLeft = false;
-            else
-                CanGoLeft = true;
-
-            if (position.X >= 830)
-                CanGoRight = false;
-            else
-                CanGoRight = true;
-            */
 
             base.Update(gameTime);
         }
@@ -45,6 +43,7 @@ namespace River_Raid.Classes {
         public void ExplodePlane() {
             AnimationFrame = 0;
             IsExploding = true;
+            IsAlive = false;
             Config.BGMovementSpeed = 0f;
             Config.FuelBarrelSpeed = 0f;
         }

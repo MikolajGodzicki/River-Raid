@@ -13,6 +13,20 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin 8bitArcadeOut_24.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:8bitArcadeOut_24.spritefont
+
+#begin 8bitArcadeOut_48.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:8bitArcadeOut_48.spritefont
+
 #begin BG_1.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -97,6 +111,20 @@
 /processorParam:TextureFormat=Color
 /build:GameOver.png
 
+#begin LanaPixel_24.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:LanaPixel_24.spritefont
+
+#begin LanaPixel_48.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:LanaPixel_48.spritefont
+
 #begin Plane.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -156,11 +184,4 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:UI.png
-
-#begin UI_Font.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-/processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Compressed
-/build:UI_Font.spritefont
 

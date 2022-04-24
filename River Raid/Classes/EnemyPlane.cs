@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace River_Raid.Classes {
-    class Enemy : ExplodeableGameObject {
-        public Enemy(Texture2D texture, Texture2D ExplodeTexture) {
+    class EnemyPlane : ExplodeableGameObject {
+        public EnemyPlane(Texture2D texture, Texture2D ExplodeTexture) {
             this.texture = texture;
             this.ExplodeTexture = ExplodeTexture;
             this.position.X = new Random().Next(Config.MinimumObjectPos, Config.MaximumObjectPos);

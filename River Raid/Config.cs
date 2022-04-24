@@ -13,10 +13,10 @@ public class Config
     public static float EnemyMovementSpeed = 5f;
     public static int MinimumObjectPos = 200;
     public static int MaximumObjectPos = 750;
-    public static float FuelSpeed = 0.1f;
+    public static float FuelSpeed = 2.1f;
     public static float FuelBarrelSpeed = 4f;
     public static int levelUpScore = 2500;
 
-    public static List<int> Points = new List<int> { 50, 100, 150, 250};
-    public static List<int> Fuel = new List<int> { 10, 15, 20, 25};
+    public static List<int> Points = new List<int> { 50, 100, 150, 250 };
+    public static List<int> Fuel = new List<int> { 10, 15, 20, 25 };
 }

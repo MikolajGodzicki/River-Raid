@@ -6,8 +6,6 @@ using System.Text;
 
 namespace River_Raid.Classes {
     class FuelBarrel : ExplodeableGameObject {
-        
-
         public FuelBarrel(Texture2D texture, Texture2D ExplodeTexture) {
             this.texture = texture;
             this.ExplodeTexture = ExplodeTexture;
