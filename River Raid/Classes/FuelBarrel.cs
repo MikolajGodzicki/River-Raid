@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using River_Ride___MG;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,14 +10,14 @@ namespace River_Raid.Classes {
         public FuelBarrel(Texture2D texture, Texture2D ExplodeTexture) {
             this.texture = texture;
             this.ExplodeTexture = ExplodeTexture;
-            this.position.X = new Random().Next(Config.MinimumObjectPos, Config.MaximumObjectPos);
+            this.position.X = new Random().Next(Main.MinimumObjectPos, Main.MaximumObjectPos);
         }
 
         public void UpdateFuelBarrel(GameTime gameTime) {
-            this.position.Y += Config.FuelBarrelSpeed;
+            this.position.Y += Main.FuelBarrelMovementSpeed;
             base.Update(gameTime);
         }
 
-        public int GetFuelAmount() => Config.Fuel[new Random().Next(Config.Fuel.Count)];
+        public int GetFuelAmount() => Main.Fuel[new Random().Next(Main.Fuel.Count)];
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using River_Ride___MG;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,7 @@ namespace River_Raid.Classes {
     class Player : ExplodeableGameObject {
         bool CanGoLeft = true, CanGoRight = true;
         public int AnimationFrame;
-        public int Health;
+        public int Health = 3;
 
         float ProjectileTime, ProjectileDelay = 800f;
 
@@ -19,13 +20,15 @@ namespace River_Raid.Classes {
             this.texture = texture;
             this.position = new Vector2(500f);
             this.ExplodeTexture = ExplodeTexture;
+            MovementSpeed = 5f;
+            FrameCount = 4;
         }
         public void UpdatePlayer(KeyboardState InputKey, GameTime gameTime) {
             if (IsAlive) {
                 if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
-                    position.X -= Config.PlaneMovementSpeed;
+                    position.X -= MovementSpeed;
                 } else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight) {
-                    position.X += Config.PlaneMovementSpeed;
+                    position.X += MovementSpeed;
                 }
 
                 ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -35,6 +38,12 @@ namespace River_Raid.Classes {
                         ProjectileTime = 0;
                     }
                 }
+
+                if (Health <= 0) {
+                    IsAlive = false;
+                    ExplodePlane();
+                }
+                    
             }
 
             base.Update(gameTime);
@@ -44,8 +53,8 @@ namespace River_Raid.Classes {
             AnimationFrame = 0;
             IsExploding = true;
             IsAlive = false;
-            Config.BGMovementSpeed = 0f;
-            Config.FuelBarrelSpeed = 0f;
+            Main.BackgroundMovementSpeed = 0f;
+            Main.FuelBarrelMovementSpeed = 0f;
         }
     }
 }

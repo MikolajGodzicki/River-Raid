@@ -8,9 +8,11 @@ namespace River_Raid.Classes {
     class GameObject {
         public Texture2D texture;
         public Vector2 position = new Vector2(0f, -100f);
+        public float MovementSpeed;
 
         float AnimationTime, AnimationDelay = 100f;
         int AnimationFrame;
+        public int FrameCount = 1;
         public Rectangle ObjectAnimation;
         public event Action<int> OnAnimationTick;
 
@@ -33,7 +35,7 @@ namespace River_Raid.Classes {
             if (position.Y + texture.Height >= OtherPosition.Y &&
                 position.Y <= OtherPosition.Y + OtherTexture.Height &&
                 position.X <= OtherPosition.X + (OtherTexture.Width / FrameCountX) &&
-                position.X + texture.Width >= OtherPosition.X)
+                position.X + texture.Width / FrameCount >= OtherPosition.X)
                 return true;
             return false;
         }

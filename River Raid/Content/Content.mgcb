@@ -111,6 +111,18 @@
 /processorParam:TextureFormat=Color
 /build:GameOver.png
 
+#begin Heart_UI.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Heart_UI.png
+
 #begin LanaPixel_24.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor

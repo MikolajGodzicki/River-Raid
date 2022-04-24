@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using River_Ride___MG;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,14 +10,17 @@ namespace River_Raid.Classes {
         public EnemyPlane(Texture2D texture, Texture2D ExplodeTexture) {
             this.texture = texture;
             this.ExplodeTexture = ExplodeTexture;
-            this.position.X = new Random().Next(Config.MinimumObjectPos, Config.MaximumObjectPos);
+            this.position.X = new Random().Next(Main.MinimumObjectPos, Main.MaximumObjectPos);
+            MovementSpeed = 5f;
+            FrameCount = 4;
         }
 
         public void UpdateEnemy(GameTime gameTime) {
             if (!IsExploding)
-                position.Y += Config.EnemyMovementSpeed;
+                position.Y += MovementSpeed;
             else
-                position.Y += Config.BGMovementSpeed;
+                position.Y += Main.BackgroundMovementSpeed;
+
             base.Update(gameTime);
         }
     }

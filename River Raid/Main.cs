@@ -19,6 +19,16 @@ namespace River_Ride___MG
         private SpriteBatch _spriteBatch;
         private SpriteFont LanaPixel_24, LanaPixel_48, bitArcadeOut_24, bitArcadeOut_48;
         private EventManager eventManager = new EventManager();
+
+        private int PrefferedHeight = 768;
+        private int PrefferedWidth = 1024;
+
+        public static float BackgroundMovementSpeed = 4f, FuelBarrelMovementSpeed = 4f;
+        public static List<int> Points = new List<int> { 50, 100, 150, 250 };
+        public static List<int> Fuel = new List<int> { 10, 15, 20, 25 };
+
+        public static int MinimumObjectPos = 200;
+        public static int MaximumObjectPos = 750;
         #endregion
 
         #region Player
@@ -34,6 +44,7 @@ namespace River_Ride___MG
         private Texture2D ProjectileTexture;
         private Texture2D PlaneEnemy;
         private Texture2D FuelBarrel;
+        private Texture2D HealthUI;
         #endregion
 
         #region Other
@@ -41,26 +52,28 @@ namespace River_Ride___MG
         private Texture2D Shadow;
 
         private Texture2D UI;
-        private FuelPtr Fuel;
+        private FuelPtr FuelPtr;
         private Vector2 FuelPosition = new Vector2(320f, 689f);
 
         private Texture2D ExplosionEffect;
+
+        private int BGCount = 2;
         #endregion
 
         public Main()
         {
             _graphics = new GraphicsDeviceManager(this);
             LoadScore();
-            Content.RootDirectory = Config.ContentRootDirectory;
+            Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
 
         protected override void Initialize()
         {
-            _graphics.PreferredBackBufferHeight = Config.PrefferedHeight;
-            _graphics.PreferredBackBufferWidth = Config.PrefferedWidth;
+            _graphics.PreferredBackBufferHeight = PrefferedHeight;
+            _graphics.PreferredBackBufferWidth = PrefferedWidth;
             _graphics.ApplyChanges();
-            Window.Title = Config.TitleGame;
+            Window.Title = "River Ride - Mikołaj Godzicki";
             base.Initialize();
         }
 
@@ -69,7 +82,7 @@ namespace River_Ride___MG
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             #region Initialize Content
-            for (int i = 0; i < Config.BGCount; i++) {
+            for (int i = 0; i < BGCount; i++) {
                 Backgrounds.Add(new Background(Content.Load<Texture2D>($"BG_{i+1}"), i));
             }
             Shadow = Content.Load<Texture2D>("Shadow");
@@ -77,12 +90,13 @@ namespace River_Ride___MG
             ProjectileTexture = Content.Load<Texture2D>("Projectile");
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
             UI = Content.Load<Texture2D>("UI");
+            HealthUI = Content.Load<Texture2D>("Heart_UI");
             LanaPixel_24 = Content.Load<SpriteFont>("LanaPixel_24");
             LanaPixel_48 = Content.Load<SpriteFont>("LanaPixel_48");
             bitArcadeOut_24 = Content.Load<SpriteFont>("8bitArcadeOut_24");
             bitArcadeOut_48 = Content.Load<SpriteFont>("8bitArcadeOut_48");
             FuelBarrel = Content.Load<Texture2D>("Fuel_Barrel");
-            Fuel = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
+            FuelPtr = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
 
             Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect);
 
@@ -90,7 +104,7 @@ namespace River_Ride___MG
             #endregion
 
             #region Events
-            Fuel.OnFuelEmpty += Player.ExplodePlane;
+            FuelPtr.OnFuelEmpty += Player.ExplodePlane;
             Player.OnAnimationTick += AddScore;
             Player.OnFireButtonClick += InstantiateProjectile;
             eventManager.OnEnemySpawnTick += InstantiateEnemy;
@@ -108,95 +122,101 @@ namespace River_Ride___MG
             KeyboardState InputKey = Keyboard.GetState();
             eventManager.Update(gameTime, InputKey);
 
-if (eventManager.gameState == EventManager.GameState.Game) { 
-            Player.UpdatePlayer(InputKey, gameTime);
-            Fuel.UpdateFuelSpend();
+            if (eventManager.gameState == EventManager.GameState.Game) { 
+                Player.UpdatePlayer(InputKey, gameTime);
+                FuelPtr.UpdateFuelSpend();
+                FuelPtr.IsAlive = Player.IsAlive;
 
-            foreach (Background item in Backgrounds) 
-                item.UpdatePosition();
+                foreach (Background item in Backgrounds) 
+                    item.UpdatePosition();
 
-            foreach (Projectile item in Projectiles)
-                item.UpdateProjectile();
+                foreach (Projectile item in Projectiles)
+                    item.UpdateProjectile();
 
-            foreach (EnemyPlane item in Enemies)
-                item.UpdateEnemy(gameTime);
+                foreach (EnemyPlane item in Enemies)
+                    item.UpdateEnemy(gameTime);
 
-            foreach (FuelBarrel item in FuelBarrels)
-                item.UpdateFuelBarrel(gameTime);
+                foreach (FuelBarrel item in FuelBarrels)
+                    item.UpdateFuelBarrel(gameTime);
 
-            if (tempLevel >= Config.levelUpScore) {
-                tempLevel = 0;
-                Level++;
-            }
-            #endregion
+                if (tempLevel >= 2500) {
+                    tempLevel = 0;
+                    Level++;
+                }
+                #endregion
 
-            #region Collisions
-            for (int y = 0; y < Projectiles.Count; y++) {
-                for (int i = 0; i < Enemies.Count; i++) {
-                    if (Projectiles[y].CheckCollision(Enemies[i].texture, Enemies[i].position)) {
-                        Enemies[i].IsExploding = true;
-                        if (Enemies[i].IsExploding && !Enemies[i].IsExploded) {
-                            AddScore(Config.Points[Random.Next(Config.Points.Count)]);
-                            Projectiles.RemoveAt(y);
-                            break;
-                        }
+                #region Collisions
+                for (int y = 0; y < Projectiles.Count; y++) {
+                    for (int i = 0; i < Enemies.Count; i++) {
+                        if (Projectiles[y].CheckCollision(Enemies[i].texture, Enemies[i].position)) {
+                            Enemies[i].IsExploding = true;
+                            if (Enemies[i].IsExploding && !Enemies[i].IsExploded) {
+                                AddScore(Points[Random.Next(Points.Count)]);
+                                Projectiles.RemoveAt(y);
+                                break;
+                            }
                             
-                        if (Enemies[i].IsExploded) 
-                            Enemies.RemoveAt(i);
+                            if (Enemies[i].IsExploded) 
+                                Enemies.RemoveAt(i);
+                        }
                     }
                 }
-            }
 
-            for (int y = 0; y < Projectiles.Count; y++) { 
-                for (int i = 0; i < FuelBarrels.Count; i++) {
-                    if (Projectiles[y].CheckCollision(FuelBarrels[i].texture, FuelBarrels[i].position, 1)) {
-                        FuelBarrels[i].IsExploding = true;
-                        if (FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
-                            Projectiles.RemoveAt(y);
-                            break;
+                for (int y = 0; y < Projectiles.Count; y++) { 
+                    for (int i = 0; i < FuelBarrels.Count; i++) {
+                        if (Projectiles[y].CheckCollision(FuelBarrels[i].texture, FuelBarrels[i].position, 1)) {
+                            FuelBarrels[i].IsExploding = true;
+                            if (FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
+                                Projectiles.RemoveAt(y);
+                                break;
+                            }
+
+                            if (FuelBarrels[i].IsExploded)
+                                FuelBarrels.RemoveAt(i);
                         }
 
-                        if (FuelBarrels[i].IsExploded)
-                            FuelBarrels.RemoveAt(i);
                     }
-
                 }
-            }
 
-            for (int i = 0; i < FuelBarrels.Count; i++) {
-                if (FuelBarrels[i].CheckCollision(Player.texture, Player.position) && !FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
-                    Fuel.AddFuel(FuelBarrels[i].GetFuelAmount());
-                    FuelBarrels.RemoveAt(i);
+                for (int i = 0; i < FuelBarrels.Count; i++) {
+                    if (FuelBarrels[i].CheckCollision(Player.texture, Player.position) && !FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
+                        FuelPtr.AddFuel(FuelBarrels[i].GetFuelAmount());
+                        FuelBarrels.RemoveAt(i);
+                    }
                 }
-            }
 
-            for (int i = 0; i < Enemies.Count; i++) {
-                if (Enemies[i].CheckCollision(Player.texture, Player.position)) {
-                    Player.Health--;
+                for (int i = 0; i < Enemies.Count; i++) {
+                    if (Enemies[i].CheckCollision(Player.texture, Player.position)) {
+                        if (!Enemies[i].IsExploding && !Enemies[i].IsExploded)
+                            Player.Health--;
+
+                        if (Player.IsAlive)
+                            Enemies[i].IsExploding = true;
+                    }
                 }
-            }
-            #endregion
+            
+                #endregion
 
-            #region Destroying
-            for (int i = 0; i < Projectiles.Count; i++) {
-                if (Projectiles[i].position.Y < -80f) {
-                    Projectiles.RemoveAt(i);
-                } 
-            }
-
-            for (int i = 0; i < Enemies.Count; i++) {
-                if (Enemies[i].position.Y > Config.PrefferedHeight + 20f) {
-                    Enemies.RemoveAt(i);
+                #region Destroying
+                for (int i = 0; i < Projectiles.Count; i++) {
+                    if (Projectiles[i].position.Y < -80f) {
+                        Projectiles.RemoveAt(i);
+                    } 
                 }
-            }
 
-            for (int i = 0; i < FuelBarrels.Count; i++) {
-                if (FuelBarrels[i].position.Y > Config.PrefferedHeight + 20f) {
-                    FuelBarrels.RemoveAt(i);
+                for (int i = 0; i < Enemies.Count; i++) {
+                    if (Enemies[i].position.Y > PrefferedHeight + 20f) {
+                        Enemies.RemoveAt(i);
+                    }
                 }
+
+                for (int i = 0; i < FuelBarrels.Count; i++) {
+                    if (FuelBarrels[i].position.Y > PrefferedHeight + 20f) {
+                        FuelBarrels.RemoveAt(i);
+                    }
+                }
+                #endregion
             }
-            #endregion
-}
             base.Update(gameTime);
         }
 
@@ -250,8 +270,11 @@ if (eventManager.gameState == EventManager.GameState.Game) {
                     #region UI
                     _spriteBatch.Draw(Shadow, new Vector2(), Color.White);
                     _spriteBatch.Draw(UI, new Vector2(), Color.White);
-                    _spriteBatch.Draw(Fuel.Fuel_Pointer, Fuel.position, Color.White);
-                    _spriteBatch.Draw(Fuel.Fuel_UI, new Vector2(), Color.White);
+                    _spriteBatch.Draw(FuelPtr.Fuel_Pointer, FuelPtr.position, Color.White);
+                    _spriteBatch.Draw(FuelPtr.Fuel_UI, new Vector2(), Color.White);
+                    for (int i = 1; i < Player.Health + 1; i++) {
+                        _spriteBatch.Draw(HealthUI, new Vector2(722f + (30 * i), 671f), Color.White);
+                    }
                     _spriteBatch.DrawString(LanaPixel_24, $"Wynik: {Score}", new Vector2(422f, 661f), Color.White);
                     _spriteBatch.DrawString(LanaPixel_24, $"Poziom: {Level}", new Vector2(422f, 701f), Color.White);
                     if (!Player.IsAlive)
@@ -320,6 +343,8 @@ if (eventManager.gameState == EventManager.GameState.Game) {
                     else
                         BlinkTime = 0;
                 }
+            } else {
+                this.Exit();
             }
         }
     }

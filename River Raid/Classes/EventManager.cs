@@ -11,8 +11,8 @@ namespace River_Raid.Classes {
         }
 
         public GameState gameState;
-        float EnemySpawnTime, EnemySpawnDelay = 2300f;
-        float FuelBarrelSpawnTime, FuelBarrelSpawnDelay = 1400f;
+        float EnemySpawnTime;
+        float FuelBarrelSpawnTime;
 
         public event Action OnEnemySpawnTick, OnFuelBarrelSpawnTick;
 
@@ -24,13 +24,13 @@ namespace River_Raid.Classes {
                 gameState = GameState.Game;
 
             EnemySpawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (EnemySpawnTime >= EnemySpawnDelay) {
+            if (EnemySpawnTime >= new Random().Next(1500, 2300)) {
                 OnEnemySpawnTick?.Invoke();
                 EnemySpawnTime = 0;
             }
 
             FuelBarrelSpawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (FuelBarrelSpawnTime >= FuelBarrelSpawnDelay) {
+            if (FuelBarrelSpawnTime >= new Random().Next(500, 1400)) {
                 OnFuelBarrelSpawnTick?.Invoke();
                 FuelBarrelSpawnTime = 0;
             }
