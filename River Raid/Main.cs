@@ -121,8 +121,10 @@ namespace River_Ride___MG
             #region Updating
             KeyboardState InputKey = Keyboard.GetState();
             eventManager.Update(gameTime, InputKey);
+            #endregion
 
-            if (eventManager.gameState == EventManager.GameState.Game) { 
+            if (eventManager.gameState == EventManager.GameState.Game) {
+                #region Update Game States
                 Player.UpdatePlayer(InputKey, gameTime);
                 FuelPtr.UpdateFuelSpend();
                 FuelPtr.IsAlive = Player.IsAlive;
