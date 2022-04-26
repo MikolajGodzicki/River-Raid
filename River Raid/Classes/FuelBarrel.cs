@@ -15,7 +15,7 @@ namespace River_Raid.Classes {
 
         public void UpdateFuelBarrel(GameTime gameTime) {
             this.position.Y += Main.FuelBarrelMovementSpeed;
-            base.Update(gameTime);
+            base.Update(gameTime, 1);
         }
 
         public int GetFuelAmount() => Main.Fuel[new Random().Next(Main.Fuel.Count)];

@@ -17,16 +17,18 @@ namespace River_Raid.Classes {
         public event Action<int> OnAnimationTick;
 
         public void Update(GameTime gameTime, int FrameCountX = 4) {
-            AnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (AnimationTime >= AnimationDelay) {
-                if (AnimationFrame >= FrameCountX - 1) {
-                    AnimationFrame = 0;
-                } else {
-                    AnimationFrame++;
-                    OnAnimationTick?.Invoke(5);
-                }
+            if (FrameCount > 1) {
+                AnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (AnimationTime >= AnimationDelay) {
+                    if (AnimationFrame >= FrameCountX - 1) {
+                        AnimationFrame = 0;
+                    } else {
+                        AnimationFrame++;
+                        OnAnimationTick?.Invoke(5);
+                    }
 
-                AnimationTime = 0;
+                    AnimationTime = 0;
+                }
             }
 
             ObjectAnimation = new Rectangle(texture.Width / FrameCountX * AnimationFrame, 0, texture.Width / FrameCountX, texture.Height);
@@ -38,6 +40,19 @@ namespace River_Raid.Classes {
                 position.X + texture.Width / FrameCount >= OtherPosition.X)
                 return true;
             return false;
+        }
+
+        public bool CheckCollision(GameObject gameObject) {
+            if (position.Y + texture.Height >= gameObject.position.Y &&
+                position.Y <= gameObject.position.Y + gameObject.texture.Height &&
+                position.X <= gameObject.position.X + (gameObject.texture.Width / gameObject.FrameCount) &&
+                position.X + texture.Width / FrameCount >= gameObject.position.X)
+                return true;
+            return false;
+        }
+
+        public void Draw(SpriteBatch spriteBatch) {
+            spriteBatch.Draw(texture, position, ObjectAnimation, Color.White);
         }
     }
 }

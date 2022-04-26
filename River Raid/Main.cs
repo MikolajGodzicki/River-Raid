@@ -83,8 +83,10 @@ namespace River_Ride___MG
 
             #region Initialize Content
             for (int i = 0; i < BGCount; i++) {
-                Backgrounds.Add(new Background(Content.Load<Texture2D>($"BG_{i+1}"), i));
+                Backgrounds.Add(new Background(Content.Load<Texture2D>($"BG_{i+1}"), i, new int[] { 1, 2}));
             }
+            Backgrounds.Add(new Background(Content.Load<Texture2D>($"BG_1"), 2, new int[] { 1, 2 }));
+            Backgrounds.Add(new Background(Content.Load<Texture2D>($"BG_2"), 2, new int[] { 1, 2 }));
             Shadow = Content.Load<Texture2D>("Shadow");
             PlaneEnemy = Content.Load<Texture2D>("Plane_Enemy");
             ProjectileTexture = Content.Load<Texture2D>("Projectile");
@@ -100,7 +102,9 @@ namespace River_Ride___MG
 
             Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect);
 
-            Backgrounds[0].position = new Vector2(Backgrounds[0].position.X, -Backgrounds[0].texture.Height);
+            for (int i = 0; i < Backgrounds.Count - 1; i++) {
+                Backgrounds[i].position = new Vector2(Backgrounds[i].position.X, -Backgrounds[i].texture.Height * (Backgrounds.Count - i - 2));
+            }
             #endregion
 
             #region Events
@@ -129,8 +133,9 @@ namespace River_Ride___MG
                 FuelPtr.UpdateFuelSpend();
                 FuelPtr.IsAlive = Player.IsAlive;
 
+                // TODO: Randomizing Background
                 foreach (Background item in Backgrounds) 
-                    item.UpdatePosition();
+                    item.UpdatePosition(Backgrounds.Count - 2);
 
                 foreach (Projectile item in Projectiles)
                     item.UpdateProjectile();
@@ -150,7 +155,7 @@ namespace River_Ride___MG
                 #region Collisions
                 for (int y = 0; y < Projectiles.Count; y++) {
                     for (int i = 0; i < Enemies.Count; i++) {
-                        if (Projectiles[y].CheckCollision(Enemies[i].texture, Enemies[i].position)) {
+                        if (Projectiles[y].CheckCollision(Enemies[i])) {
                             Enemies[i].IsExploding = true;
                             if (Enemies[i].IsExploding && !Enemies[i].IsExploded) {
                                 AddScore(Points[Random.Next(Points.Count)]);
@@ -166,7 +171,7 @@ namespace River_Ride___MG
 
                 for (int y = 0; y < Projectiles.Count; y++) { 
                     for (int i = 0; i < FuelBarrels.Count; i++) {
-                        if (Projectiles[y].CheckCollision(FuelBarrels[i].texture, FuelBarrels[i].position, 1)) {
+                        if (Projectiles[y].CheckCollision(FuelBarrels[i])) {
                             FuelBarrels[i].IsExploding = true;
                             if (FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
                                 Projectiles.RemoveAt(y);
@@ -181,14 +186,14 @@ namespace River_Ride___MG
                 }
 
                 for (int i = 0; i < FuelBarrels.Count; i++) {
-                    if (FuelBarrels[i].CheckCollision(Player.texture, Player.position) && !FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
+                    if (FuelBarrels[i].CheckCollision(Player) && !FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
                         FuelPtr.AddFuel(FuelBarrels[i].GetFuelAmount());
                         FuelBarrels.RemoveAt(i);
                     }
                 }
 
                 for (int i = 0; i < Enemies.Count; i++) {
-                    if (Enemies[i].CheckCollision(Player.texture, Player.position)) {
+                    if (Enemies[i].CheckCollision(Player)) {
                         if (!Enemies[i].IsExploding && !Enemies[i].IsExploded)
                             Player.Health--;
 
@@ -246,7 +251,8 @@ namespace River_Ride___MG
                             item.Explode(_spriteBatch, new Vector2(60f), 0.5f);
 
                         if (!item.IsExploding && !item.IsExploded)
-                            _spriteBatch.Draw(item.texture, item.position, Color.White);
+                            item.Draw(_spriteBatch);
+
                     }
 
                     foreach (Projectile item in Projectiles) {
@@ -258,7 +264,7 @@ namespace River_Ride___MG
                             item.Explode(_spriteBatch, new Vector2(30f), 0.5f);
 
                         if (!item.IsExploding && !item.IsExploded)
-                            _spriteBatch.Draw(item.texture, item.position, item.ObjectAnimation, Color.White);
+                            item.Draw(_spriteBatch);
                     }
                     #endregion
 
