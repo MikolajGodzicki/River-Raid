@@ -4,10 +4,11 @@ using Microsoft.Xna.Framework.Input;
 using System;
 
 namespace River_Raid.Classes {
-    class EventManager {
+    public class EventManager {
         public enum GameState {
             Menu,
-            Game
+            Game,
+            EndGame
         }
 
         public GameState gameState;

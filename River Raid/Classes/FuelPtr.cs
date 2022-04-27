@@ -8,7 +8,7 @@ namespace River_Raid {
         public Texture2D Fuel_Pointer;
         public Texture2D Fuel_UI;
         public int minFuel, maxFuel;
-        private float FuelSpeed = 0.3f;
+        private float FuelSpeed = 0.01f; //0.3f
 
         bool isExploded = false;
         public bool IsAlive = true;

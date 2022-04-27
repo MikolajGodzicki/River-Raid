@@ -7,27 +7,42 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace River_Raid {
-    class Background : GameObject {
+    class Background {
         //public int SpawnMinPosition, SpawnMaxPosition;
-        public int[] CollisionPositions;
         public int id;
+        public BackgroundTexture backgroundTexture;
+        public Vector2 position = new Vector2();
 
-        public Background(Texture2D texture, int id, int[] CollisionPositions) {
-            this.texture = texture;
-            this.position = new Vector2(0f, texture.Height);
+        public Background(BackgroundTexture backgroundTexture, Vector2 position, int id = 0) {
+            this.backgroundTexture = backgroundTexture;
+            this.position = new Vector2(0f);
             this.id = id;
-            this.CollisionPositions = CollisionPositions;
         }
 
-        public void UpdatePosition(int Count) {
+        public void UpdatePosition(int Count = 0) {
             position.Y += Main.BackgroundMovementSpeed;
-            if (position.Y >= texture.Height * Count) {
-                position.Y = -texture.Height * Count;
-            }
+            //if (position.Y >= backgroundTexture.texture.Height * Count) {
+            //    position.Y = -backgroundTexture.texture.Height * Count;
+            //}
         }
 
-        public new bool CheckCollision(GameObject gameObject) {
+        public bool CheckCollision(GameObject gameObject) {
+            if (gameObject.position.X <= backgroundTexture.CollisionPoints[0] &&
+                gameObject.position.X + gameObject.texture.Width >= backgroundTexture.CollisionPoints[1] &&
+                gameObject.position.Y >= position.Y + backgroundTexture.texture.Height &&
+                gameObject.position.Y + gameObject.texture.Height <= position.Y)
+                return true;
             return false;
+        }
+    }
+
+    class BackgroundTexture {
+        public Texture2D texture;
+        public int[] CollisionPoints;
+
+        public BackgroundTexture(Texture2D texture, int[] CollisionPoints) {
+            this.CollisionPoints = CollisionPoints;
+            this.texture = texture;
         }
     }
 }
