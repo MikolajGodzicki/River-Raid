@@ -57,8 +57,6 @@ namespace River_Ride___MG
         private Vector2 FuelPosition = new Vector2(320f, 689f);
 
         private Texture2D ExplosionEffect;
-
-        private int BGCount = 2;
         #endregion
 
         public Main()
@@ -99,16 +97,11 @@ namespace River_Ride___MG
             FuelPtr = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
             Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect);
 
-            for (int i = 0; i < BackgroundTextures.Count; i++) {
-                Backgrounds.Add(new Background(BackgroundTextures[i], new Vector2()));
-                Backgrounds.Add(new Background(BackgroundTextures[i], new Vector2()));
-            }
+            Backgrounds.Add(new Background(BackgroundTextures[0], new Vector2()));
+            Backgrounds.Add(new Background(BackgroundTextures[1], new Vector2()));
 
-            Backgrounds[0].position = new Vector2(Backgrounds[0].position.X, Backgrounds[0].backgroundTexture.texture.Height);
-            Backgrounds[1].position = new Vector2(Backgrounds[1].position.X, 0f);
-            for (int i = 2; i < Backgrounds.Count; i++){
-                Backgrounds[i].position = new Vector2(Backgrounds[i].position.X, -Backgrounds[i].backgroundTexture.texture.Height * (i - 1));
-            }
+            Backgrounds[0].position = new Vector2(0f, -662);
+            Backgrounds[1].position = new Vector2(0f, 0);
             #endregion
 
             #region Events
@@ -187,7 +180,6 @@ namespace River_Ride___MG
                             if (FuelBarrels[i].IsExploded)
                                 FuelBarrels.RemoveAt(i);
                         }
-
                     }
                 }
 
@@ -234,9 +226,10 @@ namespace River_Ride___MG
                 }
 
                 for (int i = 0; i < Backgrounds.Count; i++) {
-                    if (Backgrounds[i].position.Y >= BackgroundTextures[0].texture.Height) {
-                        Backgrounds.RemoveAt(i);
-                        InstantiateBackground();
+                    if (Backgrounds[i].position.Y >= 662) {
+                        Backgrounds[i].position.Y = -662 + (Backgrounds[i].position.Y - 662);
+                        Backgrounds[i].backgroundTexture = BackgroundTextures[Random.Next(BackgroundTextures.Count)];
+                        return;
                     }
                 }
                 #endregion
@@ -344,13 +337,6 @@ namespace River_Ride___MG
             if (eventManager.gameState == EventManager.GameState.Game)
                 FuelBarrels.Add(new FuelBarrel(FuelBarrel, ExplosionEffect));
         }
-
-        protected void InstantiateBackground() {
-            int num = Random.Next(BackgroundTextures.Count);
-            if (eventManager.gameState == EventManager.GameState.Game)
-                Backgrounds.Add(new Background(BackgroundTextures[num], new Vector2(0f, -BackgroundTextures[num].texture.Height)));
-        }
-
 
         float OverallBlinkTime, BlinkTimes = 5, BlinkTime, BlinkDelay = 500f; 
         protected void StartBlinkingGameOver(GameTime gameTime) {

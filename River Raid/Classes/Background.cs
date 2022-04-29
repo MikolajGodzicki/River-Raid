@@ -27,8 +27,8 @@ namespace River_Raid {
         }
 
         public bool CheckCollision(GameObject gameObject) {
-            if (gameObject.position.X <= backgroundTexture.CollisionPoints[0] &&
-                gameObject.position.X + gameObject.texture.Width >= backgroundTexture.CollisionPoints[1] &&
+            if ((gameObject.position.X <= backgroundTexture.CollisionPoints[0] || 
+                gameObject.position.X + gameObject.texture.Width >= backgroundTexture.CollisionPoints[1]) &&
                 gameObject.position.Y >= position.Y + backgroundTexture.texture.Height &&
                 gameObject.position.Y + gameObject.texture.Height <= position.Y)
                 return true;
