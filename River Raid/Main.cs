@@ -23,6 +23,7 @@ namespace River_Ride___MG
         private int PrefferedHeight = 768;
         private int PrefferedWidth = 1024;
 
+        public static float PlaneMovementSpeed = 5f;
         public static float BackgroundMovementSpeed = 4f, FuelBarrelMovementSpeed = 4f;
         public static List<int> Points = new List<int> { 50, 100, 150, 250 };
         public static List<int> Fuel = new List<int> { 10, 15, 20, 25 };
@@ -41,7 +42,6 @@ namespace River_Ride___MG
         #endregion
 
         #region Textures
-        private Texture2D ProjectileTexture;
         private Texture2D PlaneEnemy;
         private Texture2D FuelBarrel;
         private Texture2D HealthUI;
@@ -80,12 +80,11 @@ namespace River_Ride___MG
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             #region Initialize Content
-            BackgroundTextures.Add(new BackgroundTexture(Content.Load<Texture2D>($"BG_1"), new int[] { 176, 336 }));
-            BackgroundTextures.Add(new BackgroundTexture(Content.Load<Texture2D>($"BG_2"), new int[] { 128, 384 }));
+            BackgroundTextures.Add(new BackgroundTexture(Content.Load<Texture2D>($"BG_1"), new int[] { 352, 672 }));
+            BackgroundTextures.Add(new BackgroundTexture(Content.Load<Texture2D>($"BG_2"), new int[] { 256, 768 }));
             
             Shadow = Content.Load<Texture2D>("Shadow");
             PlaneEnemy = Content.Load<Texture2D>("Plane_Enemy");
-            ProjectileTexture = Content.Load<Texture2D>("Projectile");
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
             UI = Content.Load<Texture2D>("UI");
             HealthUI = Content.Load<Texture2D>("Heart_UI");
@@ -95,10 +94,12 @@ namespace River_Ride___MG
             bitArcadeOut_48 = Content.Load<SpriteFont>("8bitArcadeOut_48");
             FuelBarrel = Content.Load<Texture2D>("Fuel_Barrel");
             FuelPtr = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
-            Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect);
+            Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect, Content.Load<Texture2D>("Plane_Blinking"));
+            Player.ProjectileTexture = Content.Load<Texture2D>("Projectile");
+            Player.ProjectileMachineGunTexture = Content.Load<Texture2D>("ProjectileMachinegun");
 
-            Backgrounds.Add(new Background(BackgroundTextures[0], new Vector2()));
-            Backgrounds.Add(new Background(BackgroundTextures[1], new Vector2()));
+            Backgrounds.Add(new Background(BackgroundTextures[0]));
+            Backgrounds.Add(new Background(BackgroundTextures[1]));
 
             Backgrounds[0].position = new Vector2(0f, -662);
             Backgrounds[1].position = new Vector2(0f, 0);
@@ -108,6 +109,7 @@ namespace River_Ride___MG
             FuelPtr.OnFuelEmpty += Player.ExplodePlane;
             Player.OnAnimationTick += AddScore;
             Player.OnFireButtonClick += InstantiateProjectile;
+            Player.OnFireMachineGunButtonClick += InstantiateProjectile;
             eventManager.OnEnemySpawnTick += InstantiateEnemy;
             eventManager.OnFuelBarrelSpawnTick += InstantiateFuelBarrel;
             #endregion
@@ -130,9 +132,6 @@ namespace River_Ride___MG
                 FuelPtr.UpdateFuelSpend();
                 FuelPtr.IsAlive = Player.IsAlive;
 
-                // TODO: Randomizing Background
-                //foreach (Background item in Backgrounds) 
-                //    item.UpdatePosition(Backgrounds.Count - 2);
                 foreach (Background item in Backgrounds)
                     item.UpdatePosition();
 
@@ -154,31 +153,25 @@ namespace River_Ride___MG
                 #region Collisions
                 for (int y = 0; y < Projectiles.Count; y++) {
                     for (int i = 0; i < Enemies.Count; i++) {
-                        if (Projectiles[y].CheckCollision(Enemies[i])) {
+                        if (Projectiles[y].CheckCollision(Enemies[i]) && !Enemies[i].IsExploding) {
                             Enemies[i].IsExploding = true;
-                            if (Enemies[i].IsExploding && !Enemies[i].IsExploded) {
+                            if (!Enemies[i].IsExploded) {
                                 AddScore(Points[Random.Next(Points.Count)]);
                                 Projectiles.RemoveAt(y);
                                 break;
                             }
-                            
-                            if (Enemies[i].IsExploded) 
-                                Enemies.RemoveAt(i);
                         }
                     }
                 }
 
                 for (int y = 0; y < Projectiles.Count; y++) { 
                     for (int i = 0; i < FuelBarrels.Count; i++) {
-                        if (Projectiles[y].CheckCollision(FuelBarrels[i])) {
+                        if (Projectiles[y].CheckCollision(FuelBarrels[i]) && !FuelBarrels[i].IsExploding) {
                             FuelBarrels[i].IsExploding = true;
-                            if (FuelBarrels[i].IsExploding && !FuelBarrels[i].IsExploded) {
+                            if (!FuelBarrels[i].IsExploded) {
                                 Projectiles.RemoveAt(y);
                                 break;
                             }
-
-                            if (FuelBarrels[i].IsExploded)
-                                FuelBarrels.RemoveAt(i);
                         }
                     }
                 }
@@ -191,9 +184,10 @@ namespace River_Ride___MG
                 }
 
                 for (int i = 0; i < Enemies.Count; i++) {
-                    if (Enemies[i].CheckCollision(Player)) {
-                        if (!Enemies[i].IsExploding && !Enemies[i].IsExploded)
-                            Player.Health--;
+                    if (Enemies[i].CheckCollision(Player) && !Enemies[i].IsExploding && !Player.IsImmunity) {
+                        if (!Enemies[i].IsExploded) {
+                            Player.DealDamage();
+                        }
 
                         if (Player.IsAlive)
                             Enemies[i].IsExploding = true;
@@ -201,8 +195,11 @@ namespace River_Ride___MG
                 }
 
                 foreach (Background item in Backgrounds) {
-                    if (item.CheckCollision(Player))
-                        Player.ExplodePlane();
+                    if (item.CheckCollision(Player)) {
+                        Player.DealDamage();
+                        if (Player.Health >= 1)
+                            Player.position = new Vector2(500f);
+                    }
                 }
                 #endregion
 
@@ -229,8 +226,19 @@ namespace River_Ride___MG
                     if (Backgrounds[i].position.Y >= 662) {
                         Backgrounds[i].position.Y = -662 + (Backgrounds[i].position.Y - 662);
                         Backgrounds[i].backgroundTexture = BackgroundTextures[Random.Next(BackgroundTextures.Count)];
-                        return;
+                        MinimumObjectPos = Backgrounds[i].backgroundTexture.CollisionPoints[0];
+                        MaximumObjectPos = Backgrounds[i].backgroundTexture.CollisionPoints[1];
                     }
+                }
+
+                for (int i = 0; i < Enemies.Count; i++) {
+                    if (Enemies[i].IsExploded)
+                        Enemies.RemoveAt(i);
+                }
+
+                for (int i = 0; i < FuelBarrels.Count; i++) {
+                    if (FuelBarrels[i].IsExploded)
+                        FuelBarrels.RemoveAt(i);
                 }
                 #endregion
             }
@@ -242,8 +250,12 @@ namespace River_Ride___MG
                 case EventManager.GameState.Menu:
                     GraphicsDevice.Clear(Color.Black);
                     _spriteBatch.Begin();
-                    string MenuName = "Kliknij [ENTER] aby ruszyć";
-                    _spriteBatch.DrawString(LanaPixel_24, MenuName, new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString(MenuName).Length() / 2, GraphicsDevice.Viewport.Height / 2), Color.White);
+                    string[] MenuText = { "Kliknij [ENTER] aby ruszyć", "Spacja - Strzał", "V - Strzał z Machine Gun'a" };
+                    float offset = 0;
+                    foreach (string item in MenuText) {
+                        _spriteBatch.DrawString(LanaPixel_24, item, new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString(item).Length() / 2, GraphicsDevice.Viewport.Height / 2 + offset), Color.White);
+                        offset += 40f;
+                    }
                     _spriteBatch.End();
                     break;
                 case EventManager.GameState.Game:
@@ -282,8 +294,12 @@ namespace River_Ride___MG
                     #region Player
                     if (Player.IsExploding)
                         Player.Explode(_spriteBatch, new Vector2(95f));
-                    else if (Player.IsAlive)
-                        _spriteBatch.Draw(Player.texture, Player.position, Player.ObjectAnimation, Color.White);
+                    else if (Player.IsAlive) {
+                        if (Player.IsImmunity)
+                            _spriteBatch.Draw(Player.BlinkingTexture, Player.position, Player.ObjectAnimation, Color.White);
+                        else
+                            _spriteBatch.Draw(Player.NormalTexture, Player.position, Player.ObjectAnimation, Color.White);
+                    }
                     #endregion
 
                     #region UI
@@ -291,8 +307,10 @@ namespace River_Ride___MG
                     _spriteBatch.Draw(UI, new Vector2(), Color.White);
                     _spriteBatch.Draw(FuelPtr.Fuel_Pointer, FuelPtr.position, Color.White);
                     _spriteBatch.Draw(FuelPtr.Fuel_UI, new Vector2(), Color.White);
-                    for (int i = 1; i < Player.Health + 1; i++) {
-                        _spriteBatch.Draw(HealthUI, new Vector2(722f + (30 * i), 671f), Color.White);
+                    _spriteBatch.DrawString(LanaPixel_24, $"Naboje: {Player.MachinegunMagazine}", new Vector2(702f, 701f), Color.White);
+                    _spriteBatch.DrawString(LanaPixel_24, $"Życia:", new Vector2(702f, 661f), Color.White);
+                    for (int i = 0; i < Player.Health; i++) {
+                        _spriteBatch.Draw(HealthUI, new Vector2(697f + LanaPixel_24.MeasureString("Życia:").Length() + (20 * i), 676f), Color.White);
                     }
                     _spriteBatch.DrawString(LanaPixel_24, $"Wynik: {Score}", new Vector2(422f, 661f), Color.White);
                     _spriteBatch.DrawString(LanaPixel_24, $"Poziom: {Level}", new Vector2(422f, 701f), Color.White);
@@ -323,9 +341,9 @@ namespace River_Ride___MG
             }
         }
 
-        protected void InstantiateProjectile() {
+        protected void InstantiateProjectile(Texture2D texture) {
             if (eventManager.gameState == EventManager.GameState.Game)
-                Projectiles.Add(new Projectile(ProjectileTexture, Player.position + new Vector2(27f, 0f)));
+                Projectiles.Add(new Projectile(texture, Player.position + new Vector2(27f, 0f)));
         }
 
         protected void InstantiateEnemy() {
@@ -338,7 +356,7 @@ namespace River_Ride___MG
                 FuelBarrels.Add(new FuelBarrel(FuelBarrel, ExplosionEffect));
         }
 
-        float OverallBlinkTime, BlinkTimes = 5, BlinkTime, BlinkDelay = 500f; 
+        float OverallBlinkTime, BlinkTimes = 3, BlinkTime, BlinkDelay = 500f; 
         protected void StartBlinkingGameOver(GameTime gameTime) {
             if (OverallBlinkTime < BlinkTimes * BlinkDelay * 2) {
                 BlinkTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -346,7 +364,7 @@ namespace River_Ride___MG
                 string GameOverText = "Game Over";
                 if (BlinkTime >= BlinkDelay) {
                     if (BlinkTime <= BlinkDelay * 2)
-                        _spriteBatch.DrawString(bitArcadeOut_48, GameOverText, new Vector2(GraphicsDevice.Viewport.Width / 2 - bitArcadeOut_48.MeasureString(GameOverText).Length() / 2, GraphicsDevice.Viewport.Height / 2), Color.Black);
+                        _spriteBatch.DrawString(bitArcadeOut_48, GameOverText, new Vector2(GraphicsDevice.Viewport.Width / 2 - bitArcadeOut_48.MeasureString(GameOverText).Length() / 2, GraphicsDevice.Viewport.Height / 2 - 100), Color.Black);
                     else
                         BlinkTime = 0;
                 }

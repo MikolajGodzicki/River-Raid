@@ -13,24 +13,21 @@ namespace River_Raid {
         public BackgroundTexture backgroundTexture;
         public Vector2 position = new Vector2();
 
-        public Background(BackgroundTexture backgroundTexture, Vector2 position, int id = 0) {
+        public Background(BackgroundTexture backgroundTexture, int id = 0) {
             this.backgroundTexture = backgroundTexture;
             this.position = new Vector2(0f);
             this.id = id;
         }
 
-        public void UpdatePosition(int Count = 0) {
+        public void UpdatePosition() {
             position.Y += Main.BackgroundMovementSpeed;
-            //if (position.Y >= backgroundTexture.texture.Height * Count) {
-            //    position.Y = -backgroundTexture.texture.Height * Count;
-            //}
         }
 
-        public bool CheckCollision(GameObject gameObject) {
+        public bool CheckCollision(GameObject gameObject, int FrameCountX = 4) {
             if ((gameObject.position.X <= backgroundTexture.CollisionPoints[0] || 
-                gameObject.position.X + gameObject.texture.Width >= backgroundTexture.CollisionPoints[1]) &&
-                gameObject.position.Y >= position.Y + backgroundTexture.texture.Height &&
-                gameObject.position.Y + gameObject.texture.Height <= position.Y)
+                gameObject.position.X + gameObject.texture.Width / FrameCountX >= backgroundTexture.CollisionPoints[1]) &&
+                gameObject.position.Y <= position.Y + backgroundTexture.texture.Height &&
+                gameObject.position.Y + gameObject.texture.Height >= position.Y)
                 return true;
             return false;
         }

@@ -8,10 +8,10 @@ namespace River_Raid.Classes {
     class GameObject {
         public Texture2D texture;
         public Vector2 position = new Vector2(0f, -100f);
-        public float MovementSpeed;
+        public float MovementSpeed = 4f;
 
-        float AnimationTime, AnimationDelay = 100f;
-        int AnimationFrame;
+        protected float AnimationTime, AnimationDelay = 100f;
+        public int AnimationFrame;
         public int FrameCount = 1;
         public Rectangle ObjectAnimation;
         public event Action<int> OnAnimationTick;

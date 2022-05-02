@@ -11,13 +11,12 @@ namespace River_Raid.Classes {
             this.texture = texture;
             this.ExplodeTexture = ExplodeTexture;
             this.position.X = new Random().Next(Main.MinimumObjectPos, Main.MaximumObjectPos);
-            MovementSpeed = 5f;
             FrameCount = 4;
         }
 
         public void UpdateEnemy(GameTime gameTime) {
             if (!IsExploding)
-                position.Y += MovementSpeed;
+                position.Y += Main.PlaneMovementSpeed;
             else
                 position.Y += Main.BackgroundMovementSpeed;
 
