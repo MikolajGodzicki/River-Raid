@@ -21,6 +21,7 @@ namespace River_Raid.Classes {
                     if (ExplosionAnimationFrame >= ExplosionFrameCountX - 1) {
                         IsExploded = true;
                         IsExploding = false;
+                        ExplosionAnimationFrame = 0;
                     } else {
                         ExplosionAnimationFrame++;
                     }

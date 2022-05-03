@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Input;
 using River_Raid;
 using River_Raid.Classes;
 using System.Text;
+using System.Linq;
 
 namespace River_Ride___MG
 {
@@ -344,9 +345,16 @@ namespace River_Ride___MG
                     GraphicsDevice.Clear(Color.Black);
                     _spriteBatch.Begin();
                     string EndGameName = "Rozbiłeś się";
-                    _spriteBatch.DrawString(LanaPixel_24, $"{EndGameName} - Wynik: {Score}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{EndGameName} - Wynik: {Score}").Length() / 2, GraphicsDevice.Viewport.Height / 2), Color.White);
+                    _spriteBatch.DrawString(LanaPixel_24, $"{EndGameName} - Wynik: {Score}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{EndGameName} - Wynik: {Score}").Length() / 2, GraphicsDevice.Viewport.Height / 4), Color.White);
+                    
                     string EndGameToStartName = "Aby rozpocząć od nowa, naciśnij [ENTER]";
-                    _spriteBatch.DrawString(LanaPixel_24, $"{EndGameToStartName}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{EndGameToStartName}").Length() / 2, GraphicsDevice.Viewport.Height / 2 + 40f), Color.White);
+                    _spriteBatch.DrawString(LanaPixel_24, $"{EndGameToStartName}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{EndGameToStartName}").Length() / 2, GraphicsDevice.Viewport.Height / 4 + 40f), Color.White);
+                    
+                    string Leaderboard = "Tabela Najlepszych Wyników:";
+                    _spriteBatch.DrawString(LanaPixel_24, $"{Leaderboard}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{Leaderboard}").Length() / 2, GraphicsDevice.Viewport.Height / 4 + 120f), Color.White);
+
+                    ShowLeaderboard(_spriteBatch);
+
                     _spriteBatch.End();
                     break;
                 default:
@@ -393,6 +401,7 @@ namespace River_Ride___MG
                         BlinkTime = 0;
                 }
             } else {
+                SaveAndLoadScores();
                 ChangeState(out eventManager.gameState, EventManager.GameState.EndGame);
             }
         }
@@ -410,6 +419,43 @@ namespace River_Ride___MG
             Player.IsAlive = true;
             Player.IsImmunity = false;
             Player.MachinegunMagazine = Player.MachinegunMagazineAtStart;
+            OverallBlinkTime = 0;
+            BlinkTime = 0;
+        }
+
+        List<int> scores = new List<int>();
+        protected void SaveAndLoadScores() {
+            StreamWriter SW = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/RR_scores.txt", true);
+            SW.WriteLine(Score.ToString());
+            SW.Close();
+
+            scores.Clear();
+            int length = File.ReadLines(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/RR_scores.txt").Count();
+            Debug.WriteLine(length);
+            if (length < 10) {
+                SW = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/RR_scores.txt", true);
+                for (int i = 0; i < 11 - length; i++) {
+                    SW.WriteLine(0.ToString());
+                }
+                SW.Close();
+            }
+            StreamReader SR = new StreamReader(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/RR_scores.txt");
+            string item;
+            while ((item = SR.ReadLine()) != null) {
+                int value;
+                if (Int32.TryParse(item, out value))
+                    scores.Add(value);
+            }
+            SR.Close();
+            
+            scores.Sort();
+            scores.Reverse();
+        }
+
+        protected void ShowLeaderboard(SpriteBatch spriteBatch) {
+            for (int i = 0; i < 10; i++) {
+                _spriteBatch.DrawString(LanaPixel_24, $"{i+1}: {scores[i]}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{i + 1}: {scores[i]}").Length() / 2, GraphicsDevice.Viewport.Height / 4 + 160f + (40f * i)), Color.White);
+            }
         }
     }
 }
