@@ -39,18 +39,6 @@
 /processorParam:TextureFormat=Color
 /build:BG_1.png
 
-#begin BG_1_old.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:BG_1_old.png
-
 #begin BG_2.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -62,18 +50,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:BG_2.png
-
-#begin BG_2_old.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:BG_2_old.png
 
 #begin ExplosionEffect.png
 /importer:TextureImporter

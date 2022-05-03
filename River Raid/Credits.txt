@@ -1,0 +1,20 @@
+﻿Dziękuje za możliwość użycia Assetów do mojej gry.
+Użyte materiały:
+
+Software:
+- Monogame Lib 3.8
+- .NET Core 3.1
+
+Dźwięk:
+- https://chillmindscapes.itch.io/free-chiptune-music-pack-3-chillmindscapes
+- Program SFXR - http://www.drpetter.se/project_sfxr.html
+
+Tekstury:
+- Program Aseprite - https://www.aseprite.org
+- https://cupnooble.itch.io/sprout-lands-asset-pack
+- https://blackdragon1727.itch.io/pixel-mini-effect
+- Grafika Google
+
+Czcionki:
+- https://www.dafont.com/8-bit-arcade.font
+- https://opengameart.org/content/lanapixel-localization-friendly-pixel-font
