@@ -14,16 +14,17 @@ namespace River_Ride___MG
     public class Main : Game
     {
         #region Utils
+        public static Main Instance { get; set; }
         private GraphicsDeviceManager _graphics;
         private Random Random = new Random();
         private SpriteBatch _spriteBatch;
-        private SpriteFont LanaPixel_24, LanaPixel_48, bitArcadeOut_24, bitArcadeOut_48;
+        private SpriteFont LanaPixel_24, LanaPixel_48, bitArcadeOut_24, bitArcadeOut_96;
         private EventManager eventManager = new EventManager();
 
         private int PrefferedHeight = 768;
         private int PrefferedWidth = 1024;
 
-        public static float PlaneMovementSpeed = 5f;
+        public static float EnemyMovementSpeed = 5f;
         public static float BackgroundMovementSpeed = 4f, FuelBarrelMovementSpeed = 4f;
         public static List<int> Points = new List<int> { 50, 100, 150, 250 };
         public static List<int> Fuel = new List<int> { 10, 15, 20, 25 };
@@ -34,18 +35,19 @@ namespace River_Ride___MG
 
         #region Player
         Player Player;
-        private int Score, Level, tempLevel;
+        public int Score, Level, tempLevel;
 
         private List<Projectile> Projectiles = new List<Projectile>();
-        private List<EnemyPlane> Enemies = new List<EnemyPlane>();
+        private List<Enemy> Enemies = new List<Enemy>();
         private List<FuelBarrel> FuelBarrels = new List<FuelBarrel>();
         #endregion
 
         #region Textures
-        private Texture2D PlaneEnemy;
         private Texture2D FuelBarrel;
         private Texture2D HealthUI;
         private List<BackgroundTexture> BackgroundTextures = new List<BackgroundTexture>();
+        private List<Texture2D> HelicopterTextures = new List<Texture2D>();
+        private List<Texture2D> PlaneEnemyTextures = new List<Texture2D>();
         #endregion
 
         #region Other
@@ -57,6 +59,8 @@ namespace River_Ride___MG
         private Vector2 FuelPosition = new Vector2(320f, 689f);
 
         private Texture2D ExplosionEffect;
+
+        private Dictionary<int, Enemy> EnemyDictionary = new Dictionary<int, Enemy>();
         #endregion
 
         public Main()
@@ -84,25 +88,40 @@ namespace River_Ride___MG
             BackgroundTextures.Add(new BackgroundTexture(Content.Load<Texture2D>($"BG_2"), new int[] { 256, 768 }));
             
             Shadow = Content.Load<Texture2D>("Shadow");
-            PlaneEnemy = Content.Load<Texture2D>("Plane_Enemy");
             ExplosionEffect = Content.Load<Texture2D>("ExplosionEffect");
             UI = Content.Load<Texture2D>("UI");
             HealthUI = Content.Load<Texture2D>("Heart_UI");
             LanaPixel_24 = Content.Load<SpriteFont>("LanaPixel_24");
             LanaPixel_48 = Content.Load<SpriteFont>("LanaPixel_48");
             bitArcadeOut_24 = Content.Load<SpriteFont>("8bitArcadeOut_24");
-            bitArcadeOut_48 = Content.Load<SpriteFont>("8bitArcadeOut_48");
+            bitArcadeOut_96 = Content.Load<SpriteFont>("8bitArcadeOut_48");
             FuelBarrel = Content.Load<Texture2D>("Fuel_Barrel");
             FuelPtr = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
             Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect, Content.Load<Texture2D>("Plane_Blinking"));
             Player.ProjectileTexture = Content.Load<Texture2D>("Projectile");
             Player.ProjectileMachineGunTexture = Content.Load<Texture2D>("ProjectileMachinegun");
 
+            for (int i = 1; i <= 3; i++) {
+                HelicopterTextures.Add(Content.Load<Texture2D>($"Helicopter_{i}_LeftSide"));
+                HelicopterTextures.Add(Content.Load<Texture2D>($"Helicopter_{i}_RightSide"));
+            }
+
+            for (int i = 1; i <= 3; i++) {
+                PlaneEnemyTextures.Add(Content.Load<Texture2D>($"Plane_Enemy_{i}"));
+            }
+
             Backgrounds.Add(new Background(BackgroundTextures[0]));
             Backgrounds.Add(new Background(BackgroundTextures[1]));
 
             Backgrounds[0].position = new Vector2(0f, -662);
             Backgrounds[1].position = new Vector2(0f, 0);
+
+            
+            for (int i = 0; i < PlaneEnemyTextures.Count; i++)
+                EnemyDictionary.Add(i, new Enemy(PlaneEnemyTextures[i], ExplosionEffect, Enemy.EnemyType.Plane));
+            for (int i = 0; i < HelicopterTextures.Count; i++) {
+                EnemyDictionary.Add(i + PlaneEnemyTextures.Count, new Enemy(HelicopterTextures[i], ExplosionEffect, i % 2 == 0 ? Enemy.EnemyType.HelicopterLeftSide : Enemy.EnemyType.HelicopterRightSide));
+            }
             #endregion
 
             #region Events
@@ -112,6 +131,7 @@ namespace River_Ride___MG
             Player.OnFireMachineGunButtonClick += InstantiateProjectile;
             eventManager.OnEnemySpawnTick += InstantiateEnemy;
             eventManager.OnFuelBarrelSpawnTick += InstantiateFuelBarrel;
+            eventManager.OnRestartGame += RestartGame;
             #endregion
 
         }
@@ -138,8 +158,8 @@ namespace River_Ride___MG
                 foreach (Projectile item in Projectiles)
                     item.UpdateProjectile();
 
-                foreach (EnemyPlane item in Enemies)
-                    item.UpdateEnemy(gameTime);
+                foreach (Enemy item in Enemies)
+                    item.UpdateEnemy(gameTime, Player);
 
                 foreach (FuelBarrel item in FuelBarrels)
                     item.UpdateFuelBarrel(gameTime);
@@ -282,7 +302,7 @@ namespace River_Ride___MG
                         _spriteBatch.Draw(item.texture, item.position, Color.White);
                     }
 
-                    foreach (EnemyPlane item in Enemies) {
+                    foreach (Enemy item in Enemies) {
                         if (item.IsExploding)
                             item.Explode(_spriteBatch, new Vector2(30f), 0.5f);
 
@@ -325,6 +345,8 @@ namespace River_Ride___MG
                     _spriteBatch.Begin();
                     string EndGameName = "Rozbiłeś się";
                     _spriteBatch.DrawString(LanaPixel_24, $"{EndGameName} - Wynik: {Score}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{EndGameName} - Wynik: {Score}").Length() / 2, GraphicsDevice.Viewport.Height / 2), Color.White);
+                    string EndGameToStartName = "Aby rozpocząć od nowa, naciśnij [ENTER]";
+                    _spriteBatch.DrawString(LanaPixel_24, $"{EndGameToStartName}", new Vector2(GraphicsDevice.Viewport.Width / 2 - LanaPixel_24.MeasureString($"{EndGameToStartName}").Length() / 2, GraphicsDevice.Viewport.Height / 2 + 40f), Color.White);
                     _spriteBatch.End();
                     break;
                 default:
@@ -347,8 +369,10 @@ namespace River_Ride___MG
         }
 
         protected void InstantiateEnemy() {
-            if (eventManager.gameState == EventManager.GameState.Game)
-                Enemies.Add(new EnemyPlane(PlaneEnemy, ExplosionEffect));
+            if (eventManager.gameState == EventManager.GameState.Game) {
+                int i = Random.Next(EnemyDictionary.Count);
+                Enemies.Add(new Enemy(EnemyDictionary[i].texture, EnemyDictionary[i].ExplodeTexture, EnemyDictionary[i].enemyType));
+            }
         }
 
         protected void InstantiateFuelBarrel() {
@@ -356,7 +380,7 @@ namespace River_Ride___MG
                 FuelBarrels.Add(new FuelBarrel(FuelBarrel, ExplosionEffect));
         }
 
-        float OverallBlinkTime, BlinkTimes = 3, BlinkTime, BlinkDelay = 500f; 
+        float OverallBlinkTime, BlinkTimes = 2, BlinkTime, BlinkDelay = 500f; 
         protected void StartBlinkingGameOver(GameTime gameTime) {
             if (OverallBlinkTime < BlinkTimes * BlinkDelay * 2) {
                 BlinkTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -364,7 +388,7 @@ namespace River_Ride___MG
                 string GameOverText = "Game Over";
                 if (BlinkTime >= BlinkDelay) {
                     if (BlinkTime <= BlinkDelay * 2)
-                        _spriteBatch.DrawString(bitArcadeOut_48, GameOverText, new Vector2(GraphicsDevice.Viewport.Width / 2 - bitArcadeOut_48.MeasureString(GameOverText).Length() / 2, GraphicsDevice.Viewport.Height / 2 - 100), Color.Black);
+                        _spriteBatch.DrawString(bitArcadeOut_96, GameOverText, new Vector2(GraphicsDevice.Viewport.Width / 2 - bitArcadeOut_96.MeasureString(GameOverText).Length() / 2, GraphicsDevice.Viewport.Height / 2 - 100), Color.Black);
                     else
                         BlinkTime = 0;
                 }
@@ -375,6 +399,17 @@ namespace River_Ride___MG
 
         public void ChangeState(out EventManager.GameState gameState, EventManager.GameState gameStateToChange){
             gameState = gameStateToChange;
+        }
+
+        public void RestartGame() {
+            Score = 0;
+            Player.position = new Vector2(500f);
+            Projectiles.Clear();
+            Enemies.Clear();
+            Player.Health = Player.HealthAtStart;
+            Player.IsAlive = true;
+            Player.IsImmunity = false;
+            Player.MachinegunMagazine = Player.MachinegunMagazineAtStart;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using River_Ride___MG;
 using System;
 
 namespace River_Raid.Classes {
@@ -15,7 +16,7 @@ namespace River_Raid.Classes {
         float EnemySpawnTime;
         float FuelBarrelSpawnTime;
 
-        public event Action OnEnemySpawnTick, OnFuelBarrelSpawnTick;
+        public event Action OnEnemySpawnTick, OnFuelBarrelSpawnTick, OnRestartGame;
 
         public EventManager() {
             gameState = GameState.Menu;
@@ -24,8 +25,13 @@ namespace River_Raid.Classes {
             if (gameState == GameState.Menu && InputKey.IsKeyDown(Keys.Enter))
                 gameState = GameState.Game;
 
+            if (gameState == GameState.EndGame && InputKey.IsKeyDown(Keys.Enter)) {
+                gameState = GameState.Game;
+                OnRestartGame.Invoke();
+            }
+
             EnemySpawnTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            if (EnemySpawnTime >= new Random().Next(1500, 2300)) {
+            if (EnemySpawnTime >= new Random().Next(600, 2300)) {
                 OnEnemySpawnTick?.Invoke();
                 EnemySpawnTime = 0;
             }

@@ -11,11 +11,11 @@ namespace River_Raid.Classes {
         bool CanGoLeft = true, CanGoRight = true;
         public Texture2D NormalTexture, BlinkingTexture;
         public bool IsImmunity;
-        public int Health = 3;
+        public int HealthAtStart, Health = 3;
 
         float ProjectileTime, ProjectileDelay = 800f;
         float MachinegunTime, MachinegunDelay = 200f;
-        public int MachinegunMagazine = 30;
+        public int MachinegunMagazineAtStart, MachinegunMagazine = 30;
         public float ImmunityTime, ImmunityDelay = 2400f;
         float tempAnimationDelay;
         public Texture2D ProjectileTexture, ProjectileMachineGunTexture;
@@ -28,6 +28,8 @@ namespace River_Raid.Classes {
             this.position = new Vector2(500f);
             this.ExplodeTexture = ExplodeTexture;
             this.BlinkingTexture = BlinkingTexture;
+            HealthAtStart = Health;
+            MachinegunMagazineAtStart = MachinegunMagazine;
             tempAnimationDelay = AnimationDelay;
             MovementSpeed = 5f;
             FrameCount = 4;
@@ -43,15 +45,15 @@ namespace River_Raid.Classes {
                 if (InputKey.IsKeyDown(Keys.W)) {
                     Main.BackgroundMovementSpeed = 6f;
                     Main.FuelBarrelMovementSpeed = 6f;
-                    Main.PlaneMovementSpeed = 7f;
+                    Main.EnemyMovementSpeed = 7f;
                 } else if (InputKey.IsKeyDown(Keys.S)) {
                     Main.BackgroundMovementSpeed = 2f;
                     Main.FuelBarrelMovementSpeed = 2f;
-                    Main.PlaneMovementSpeed = 3f;
+                    Main.EnemyMovementSpeed = 3f;
                 } else {
                     Main.BackgroundMovementSpeed = 4f;
                     Main.FuelBarrelMovementSpeed = 4f;
-                    Main.PlaneMovementSpeed = 5f;
+                    Main.EnemyMovementSpeed = 5f;
                 }
 
                 ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
