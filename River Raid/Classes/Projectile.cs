@@ -12,8 +12,9 @@ namespace River_Raid {
             this.position = position;
             MovementSpeed = 6f;
         }
-        public void UpdateProjectile() {
+        public void Update(GameTime gameTime) {
             position.Y -= MovementSpeed;
+            base.Update(gameTime, 1);
         }
     }
 }

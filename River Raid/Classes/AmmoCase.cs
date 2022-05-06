@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace River_Raid.Classes {
-    class FuelBarrel : ExplodeableGameObject {
-        public FuelBarrel(Texture2D texture, Texture2D ExplodeTexture) {
+    class AmmoCase : GameObject {
+        public AmmoCase(Texture2D texture) {
             this.texture = texture;
-            this.ExplodeTexture = ExplodeTexture;
             this.position.X = new Random().Next(Main.MinimumObjectPos, Main.MaximumObjectPos);
         }
 
@@ -17,7 +16,5 @@ namespace River_Raid.Classes {
             this.position.Y += Main.FallingObjectMovementSpeed;
             base.Update(gameTime, 1);
         }
-
-        public int GetFuelAmount() => Main.Fuel[new Random().Next(Main.Fuel.Count)];
     }
 }

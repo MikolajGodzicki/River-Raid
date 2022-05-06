@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using River_Raid.Classes;
+using River_Ride___MG;
 using System;
 
 namespace River_Raid {
@@ -8,7 +9,6 @@ namespace River_Raid {
         public Texture2D Fuel_Pointer;
         public Texture2D Fuel_UI;
         public int minFuel, maxFuel;
-        private float FuelSpeed = 0.01f; //0.3f
 
         bool isExploded = false;
         public bool IsAlive = true;
@@ -25,7 +25,7 @@ namespace River_Raid {
         public void UpdateFuelSpend() {
             if (!isExploded) {
                 if (position.X > minFuel & IsAlive)
-                    position.X -= FuelSpeed;
+                    position.X -= Main.FuelSpeed;
                 else {
                     OnFuelEmpty?.Invoke();
                     isExploded = true;

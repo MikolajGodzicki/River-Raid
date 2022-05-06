@@ -1,20 +1,38 @@
 ﻿Dziękuje za możliwość użycia Assetów do mojej gry.
-Użyte materiały:
 
-Software:
+----- Użyte materiały -----
+
+:::::Software:::::
 - Monogame Lib 3.8
 - .NET Core 3.1
 
-Dźwięk:
+:::::Dźwięk:::::
 - https://chillmindscapes.itch.io/free-chiptune-music-pack-3-chillmindscapes
 - Program SFXR - http://www.drpetter.se/project_sfxr.html
 
-Tekstury:
+:::::Tekstury:::::
 - Program Aseprite - https://www.aseprite.org
 - https://cupnooble.itch.io/sprout-lands-asset-pack
 - https://blackdragon1727.itch.io/pixel-mini-effect
 - Grafika Google
 
-Czcionki:
+:::::Czcionki:::::
 - https://www.dafont.com/8-bit-arcade.font
 - https://opengameart.org/content/lanapixel-localization-friendly-pixel-font
+
+
+
+----- Poradnik -----
+
+:::::Gracz:::::
+W, Strzałka w Górę - Przyśpieszenie
+S, Strzałka w Dół - Zwolenie
+A, Strzałka w Lewo - Skręt w Lewo
+D, Strzałka w Prawo - Skręt w Prawo
+Spacja - Strzał Rakietą
+V - Strzał z MachineGuna
+
+:::::Audio:::::
+{ - Przyciszenie
+} - Podgłośnienie
+M - Wyłączenie dźwięku

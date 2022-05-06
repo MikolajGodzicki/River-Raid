@@ -27,7 +27,7 @@ namespace River_Raid.Classes {
             FrameCount = 4;
         }
 
-        public void UpdateEnemy(GameTime gameTime, Player player) {
+        public void Update(GameTime gameTime, Player player) {
             switch (enemyType) {
                 case EnemyType.Plane:
                     if (!IsExploding)
@@ -39,7 +39,7 @@ namespace River_Raid.Classes {
                     if (!IsExploding) {
                         if (player.IsAlive)
                             position.Y += Main.EnemyMovementSpeed - 1;
-                        position.X += Main.EnemyMovementSpeed - 2;
+                        position.X += Main.EnemyHelicopterMovementSpeed - 2;
                     }
                     else
                         position.Y += Main.BackgroundMovementSpeed;
@@ -48,7 +48,7 @@ namespace River_Raid.Classes {
                     if (!IsExploding) {
                         if (player.IsAlive)
                             position.Y += Main.EnemyMovementSpeed - 1;
-                        position.X -= Main.EnemyMovementSpeed - 2;
+                        position.X -= Main.EnemyHelicopterMovementSpeed - 2;
                     } else
                         position.Y += Main.BackgroundMovementSpeed;
                     break;

@@ -42,24 +42,19 @@ namespace River_Raid.Classes {
                     position.X += MovementSpeed;
                 }
 
-                if (InputKey.IsKeyDown(Keys.W)) {
-                    Main.BackgroundMovementSpeed = 6f;
-                    Main.FuelBarrelMovementSpeed = 6f;
-                    Main.EnemyMovementSpeed = 7f;
-                } else if (InputKey.IsKeyDown(Keys.S)) {
-                    Main.BackgroundMovementSpeed = 2f;
-                    Main.FuelBarrelMovementSpeed = 2f;
-                    Main.EnemyMovementSpeed = 3f;
+                if (InputKey.IsKeyDown(Keys.W) || InputKey.IsKeyDown(Keys.Up)) {
+                    Main.SetSpeed(2f); 
+                } else if (InputKey.IsKeyDown(Keys.S) || InputKey.IsKeyDown(Keys.Down)) {
+                    Main.SetSpeed(-2f);
                 } else {
-                    Main.BackgroundMovementSpeed = 4f;
-                    Main.FuelBarrelMovementSpeed = 4f;
-                    Main.EnemyMovementSpeed = 5f;
+                    Main.SetSpeed(0f);
                 }
 
                 ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 if (ProjectileTime >= ProjectileDelay) {
                     if (InputKey.IsKeyDown(Keys.Space)) {
                         OnFireButtonClick?.Invoke(ProjectileTexture);
+                        Main.audioManager.PlaySound("Shoot");
                         ProjectileTime = 0;
                     }
                 }
@@ -69,6 +64,7 @@ namespace River_Raid.Classes {
                     if (InputKey.IsKeyDown(Keys.V) && MachinegunMagazine > 0) {
                         OnFireMachineGunButtonClick?.Invoke(ProjectileMachineGunTexture);
                         MachinegunMagazine--;
+                        Main.audioManager.PlaySound("MachineGun");
                         MachinegunTime = 0;
                     }
                 }
@@ -97,13 +93,20 @@ namespace River_Raid.Classes {
             IsExploding = true;
             IsAlive = false;
             Main.BackgroundMovementSpeed = 0f;
-            Main.FuelBarrelMovementSpeed = 0f;
+            Main.FallingObjectMovementSpeed = 0f;
         }
 
         public void DealDamage(int amount = 1) {
             Health -= amount;
             IsImmunity = true;
             ImmunityTime = 0;
+        }
+
+        public void AddAmmo(int amount) {
+            int tempAmount = amount;
+            if (MachinegunMagazine + amount > 90)
+                tempAmount -= (MachinegunMagazine + amount) - 90;
+            MachinegunMagazine += tempAmount;
         }
     }
 }

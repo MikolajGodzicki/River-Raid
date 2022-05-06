@@ -19,7 +19,7 @@ namespace River_Raid {
             this.id = id;
         }
 
-        public void UpdatePosition() {
+        public void Update() {
             position.Y += Main.BackgroundMovementSpeed;
         }
 
