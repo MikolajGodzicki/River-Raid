@@ -489,6 +489,8 @@ namespace River_Ride___MG
 
         public void RestartGame() {
             Score = 0;
+            Level = 0;
+            tempLevel = 0;
             Player.position = new Vector2(500f);
             Projectiles.Clear();
             Enemies.Clear();
