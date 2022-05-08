@@ -321,6 +321,13 @@ namespace River_Ride___MG
                     if (FuelBarrels[i].IsExploded)
                         FuelBarrels.RemoveAt(i);
                 }
+
+                for (int i = 0; i < Entities.Count; i++) {
+                    if (Entities[i].position.Y > PrefferedHeight + 50) {
+                        Entities.RemoveAt(i);
+                    }
+                }
+                    
                 #endregion
             }
             base.Update(gameTime);
@@ -544,7 +551,7 @@ namespace River_Ride___MG
 
             int[,] Array = {
                 { 600, 2300, } ,
-                { 400, 1000, } ,
+                { 200, 1000, } ,
                 { 7000, 8500, }
             };
 
