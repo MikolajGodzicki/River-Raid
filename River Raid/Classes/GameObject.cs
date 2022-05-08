@@ -9,6 +9,7 @@ namespace River_Raid.Classes {
         public Texture2D texture;
         public Vector2 position = new Vector2(0f, -100f);
         public int MovementSpeed = 4;
+        public int ScoreAdding = 5;
 
         protected float AnimationTime, AnimationDelay = 100f;
         public int AnimationFrame;
@@ -24,7 +25,7 @@ namespace River_Raid.Classes {
                         AnimationFrame = 0;
                     } else {
                         AnimationFrame++;
-                        OnAnimationTick?.Invoke(MovementSpeed);
+                        OnAnimationTick?.Invoke(ScoreAdding);
                     }
 
                     AnimationTime = 0;
