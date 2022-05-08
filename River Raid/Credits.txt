@@ -36,3 +36,4 @@ V - Strzał z MachineGuna
 { - Przyciszenie
 } - Podgłośnienie
 M - Wyłączenie dźwięku
+J - Wyłączenie muzyki

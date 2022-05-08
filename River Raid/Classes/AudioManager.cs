@@ -78,9 +78,13 @@ namespace River_Raid.Classes {
                 SoundEffect.MasterVolume -= 0.1f;
             } else if (input.IsKeyDown(Keys.OemCloseBrackets) && SoundEffect.MasterVolume < 0.9f) {
                 SoundEffect.MasterVolume += 0.1f;
-                
             } else if (input.IsKeyDown(Keys.M)) {
                 SoundEffect.MasterVolume = 0f;
+            } else if (input.IsKeyDown(Keys.J)) {
+                if (MediaPlayer.State == MediaState.Paused)
+                    MediaPlayer.Resume();
+                else
+                    MediaPlayer.Pause();
             }
         }
 
