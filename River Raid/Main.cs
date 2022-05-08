@@ -107,7 +107,7 @@ namespace River_Ride___MG
             LanaPixel_24 = Content.Load<SpriteFont>("LanaPixel_24");
             LanaPixel_48 = Content.Load<SpriteFont>("LanaPixel_48");
             bitArcadeOut_24 = Content.Load<SpriteFont>("8bitArcadeOut_24");
-            bitArcadeOut_96 = Content.Load<SpriteFont>("8bitArcadeOut_48");
+            bitArcadeOut_96 = Content.Load<SpriteFont>("8bitArcadeOut_96");
             FuelBarrel = Content.Load<Texture2D>("Fuel_Barrel");
             AmmoCase = Content.Load<Texture2D>("AmmoCase");
             Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect, Content.Load<Texture2D>("Plane_Blinking"));
@@ -257,11 +257,11 @@ namespace River_Ride___MG
                     if (Enemies[i].CheckCollision(Player) && !Enemies[i].IsExploding && !Player.IsImmunity) {
                         if (!Enemies[i].IsExploded) {
                             Player.DealDamage();
+                            audioManager.PlaySound("Explosion");
                         }
 
                         if (Player.IsAlive) {
                             Enemies[i].IsExploding = true;
-                            audioManager.PlaySound("Explosion");
                         }
                     }
                 }
@@ -367,7 +367,6 @@ namespace River_Ride___MG
 
                     foreach (Projectile item in Projectiles) {
                         item.Draw(_spriteBatch);
-                        //_spriteBatch.Draw(item.texture, item.position, Color.White);
                     }
 
                     foreach (Enemy item in Enemies) {
@@ -545,7 +544,7 @@ namespace River_Ride___MG
 
             int[,] Array = {
                 { 600, 2300, } ,
-                { 600, 1000, } ,
+                { 400, 1000, } ,
                 { 7000, 8500, }
             };
 

@@ -10,7 +10,7 @@ namespace River_Raid {
         public Projectile(Texture2D texture, Vector2 position) {
             this.texture = texture;
             this.position = position;
-            MovementSpeed = 6f;
+            MovementSpeed = 6;
         }
         public void Update(GameTime gameTime) {
             position.Y -= MovementSpeed;

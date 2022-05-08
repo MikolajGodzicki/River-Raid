@@ -32,7 +32,7 @@ namespace River_Raid.Classes {
             HealthAtStart = Health;
             MachinegunMagazineAtStart = MachinegunMagazine;
             tempAnimationDelay = AnimationDelay;
-            MovementSpeed = 5f;
+            MovementSpeed = 5;
             FrameCount = 4;
         }
         public void UpdatePlayer(KeyboardState InputKey, GameTime gameTime) {
@@ -44,11 +44,14 @@ namespace River_Raid.Classes {
                 }
 
                 if (InputKey.IsKeyDown(Keys.W) || InputKey.IsKeyDown(Keys.Up)) {
-                    Main.SetSpeed(2); 
+                    Main.SetSpeed(2);
+                    MovementSpeed = 10;
                 } else if (InputKey.IsKeyDown(Keys.S) || InputKey.IsKeyDown(Keys.Down)) {
                     Main.SetSpeed(-2);
+                    MovementSpeed = 2;
                 } else {
                     Main.SetSpeed(0);
+                    MovementSpeed = 5;
                 }
 
                 ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;

@@ -42,7 +42,6 @@ namespace River_Raid.Classes {
 
             int random = new Random().Next(Themes.Count);
             countDuration = (Themes[random].Duration.Minutes * 60) + Themes[random].Duration.Seconds;
-            System.Diagnostics.Debug.WriteLine(countDuration);
             MediaPlayer.Play(Themes[random]);
         }
 
@@ -77,8 +76,9 @@ namespace River_Raid.Classes {
         public void Update(KeyboardState input) {
             if (input.IsKeyDown(Keys.OemOpenBrackets) && SoundEffect.MasterVolume > 0.1f) {
                 SoundEffect.MasterVolume -= 0.1f;
-            } else if (input.IsKeyDown(Keys.OemCloseBrackets) && SoundEffect.MasterVolume < 1f) {
+            } else if (input.IsKeyDown(Keys.OemCloseBrackets) && SoundEffect.MasterVolume < 0.9f) {
                 SoundEffect.MasterVolume += 0.1f;
+                
             } else if (input.IsKeyDown(Keys.M)) {
                 SoundEffect.MasterVolume = 0f;
             }
