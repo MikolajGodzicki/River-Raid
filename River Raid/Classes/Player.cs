@@ -12,9 +12,10 @@ namespace River_Raid.Classes {
         public Texture2D NormalTexture, BlinkingTexture;
         public bool IsImmunity;
         public int HealthAtStart, Health = 3;
+        public int MaxFuel = 320;
 
         float ProjectileTime, ProjectileDelay = 800f;
-        float MachinegunTime, MachinegunDelay = 200f;
+        float MachinegunTime, MachinegunDelay = 150f;
         public int MachinegunMagazineAtStart, MachinegunMagazine = 30;
         public float ImmunityTime, ImmunityDelay = 2400f;
         float tempAnimationDelay;
@@ -43,11 +44,11 @@ namespace River_Raid.Classes {
                 }
 
                 if (InputKey.IsKeyDown(Keys.W) || InputKey.IsKeyDown(Keys.Up)) {
-                    Main.SetSpeed(2f); 
+                    Main.SetSpeed(2); 
                 } else if (InputKey.IsKeyDown(Keys.S) || InputKey.IsKeyDown(Keys.Down)) {
-                    Main.SetSpeed(-2f);
+                    Main.SetSpeed(-2);
                 } else {
-                    Main.SetSpeed(0f);
+                    Main.SetSpeed(0);
                 }
 
                 ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -61,10 +62,14 @@ namespace River_Raid.Classes {
 
                 MachinegunTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 if (MachinegunTime >= MachinegunDelay) {
-                    if (InputKey.IsKeyDown(Keys.V) && MachinegunMagazine > 0) {
-                        OnFireMachineGunButtonClick?.Invoke(ProjectileMachineGunTexture);
-                        MachinegunMagazine--;
-                        Main.audioManager.PlaySound("MachineGun");
+                    if (InputKey.IsKeyDown(Keys.V)) {
+                        if (MachinegunMagazine > 0) { 
+                            OnFireMachineGunButtonClick?.Invoke(ProjectileMachineGunTexture);
+                            MachinegunMagazine--;
+                            Main.audioManager.PlaySound("MachineGun");
+                        } else {
+                            Main.audioManager.PlaySound("EmptyWeapon");
+                        }
                         MachinegunTime = 0;
                     }
                 }
@@ -94,6 +99,7 @@ namespace River_Raid.Classes {
             IsAlive = false;
             Main.BackgroundMovementSpeed = 0f;
             Main.FallingObjectMovementSpeed = 0f;
+            Main.audioManager.PlaySound("Explosion");
         }
 
         public void DealDamage(int amount = 1) {

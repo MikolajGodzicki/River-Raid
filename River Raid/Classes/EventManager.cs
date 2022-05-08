@@ -15,12 +15,16 @@ namespace River_Raid.Classes {
 
         public GameState gameState;
         float VolumeChangeTime;
-        float EnemySpawnTime, FuelBarrelSpawnTime, AmmoCaseSpawnTime;
-        int EnemyRandom, FuelBarrelRandom, AmmoCaseRandom;
+        float EnemySpawnTime, FuelBarrelSpawnTime, AmmoCaseSpawnTime, EntitySpawnTime;
+        int EnemyRandom, FuelBarrelRandom, AmmoCaseRandom, EntityRandom;
+        public int[] EnemyRandomArray;
+        public int[] FuelRandomArray;
+        public int[] AmmoRandomArray;
 
         public event Action OnEnemySpawnTick, 
             OnFuelBarrelSpawnTick, 
             OnAmmoCaseSpawnTick,
+            OnEntitySpawnTick,
             OnRestartGame;
 
         public EventManager() {
@@ -48,23 +52,30 @@ namespace River_Raid.Classes {
             if (gameState == GameState.Game) {
                 EnemySpawnTime += time;
                 if (EnemySpawnTime >= EnemyRandom) {
-                    EnemyRandom = new Random().Next(600, 2300);
+                    EnemyRandom = new Random().Next(EnemyRandomArray[0], EnemyRandomArray[1]);
                     OnEnemySpawnTick?.Invoke();
                     EnemySpawnTime = 0;
                 }
 
                 FuelBarrelSpawnTime += time;
                 if (FuelBarrelSpawnTime >= FuelBarrelRandom) {
-                    FuelBarrelRandom = new Random().Next(300, 700);
+                    FuelBarrelRandom = new Random().Next(FuelRandomArray[0], FuelRandomArray[1]);
                     OnFuelBarrelSpawnTick?.Invoke();
                     FuelBarrelSpawnTime = 0;
                 }
 
                 AmmoCaseSpawnTime += time;
                 if (AmmoCaseSpawnTime >= AmmoCaseRandom) {
-                    AmmoCaseRandom = new Random().Next(3000, 3500);
+                    AmmoCaseRandom = new Random().Next(AmmoRandomArray[0], AmmoRandomArray[1]);
                     OnAmmoCaseSpawnTick?.Invoke();
                     AmmoCaseSpawnTime = 0;
+                }
+
+                EntitySpawnTime += time;
+                if (EntitySpawnTime >= EntityRandom) {
+                    EntityRandom = new Random().Next(100, 400);
+                    OnEntitySpawnTick?.Invoke();
+                    EntitySpawnTime = 0;
                 }
             }
         }

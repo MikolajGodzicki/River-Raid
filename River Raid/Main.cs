@@ -20,17 +20,17 @@ namespace River_Ride___MG
         private Random Random = new Random();
         private SpriteBatch _spriteBatch;
         private SpriteFont LanaPixel_24, LanaPixel_48, bitArcadeOut_24, bitArcadeOut_96;
-        private EventManager eventManager = new EventManager();
+        private static EventManager eventManager = new EventManager();
 
-        private int PrefferedHeight = 768;
-        private int PrefferedWidth = 1024;
+        public static int PrefferedHeight = 768;
+        public static int PrefferedWidth = 1024;
 
-        public static float FuelSpeed = 0.01f; //0.3f
-        public static float EnemyMovementSpeed = 5f;
+        public static float FuelSpeed;
+        public static float EnemyMovementSpeed;
         public static float EnemyHelicopterMovementSpeed = 5f;
-        public static float BackgroundMovementSpeed = 4f, FallingObjectMovementSpeed = 4f;
+        public static float BackgroundMovementSpeed, FallingObjectMovementSpeed;
         public static List<int> Points = new List<int> { 50, 100, 150, 250 };
-        public static List<int> Fuel = new List<int> { 10, 15, 20, 25 };
+        public static List<int> Fuel = new List<int> { 5, 10, 15 };
 
         public static int MinimumObjectPos = 200;
         public static int MaximumObjectPos = 750;
@@ -44,6 +44,7 @@ namespace River_Ride___MG
         private List<Enemy> Enemies = new List<Enemy>();
         private List<FuelBarrel> FuelBarrels = new List<FuelBarrel>();
         private List<AmmoCase> AmmoCases = new List<AmmoCase>();
+        private List<Entity> Entities = new List<Entity>();
         #endregion
 
         #region Textures
@@ -53,6 +54,7 @@ namespace River_Ride___MG
         private List<BackgroundTexture> BackgroundTextures = new List<BackgroundTexture>();
         private List<Texture2D> HelicopterTextures = new List<Texture2D>();
         private List<Texture2D> PlaneEnemyTextures = new List<Texture2D>();
+        private List<Texture2D> EntitiesTextuers = new List<Texture2D>();
         #endregion
 
         #region Audio
@@ -86,6 +88,7 @@ namespace River_Ride___MG
             _graphics.ApplyChanges();
             Window.Title = "River Ride - Mikołaj Godzicki";
             audioManager = new AudioManager(Content);
+            SetSpeed(0);
             base.Initialize();
         }
 
@@ -107,10 +110,11 @@ namespace River_Ride___MG
             bitArcadeOut_96 = Content.Load<SpriteFont>("8bitArcadeOut_48");
             FuelBarrel = Content.Load<Texture2D>("Fuel_Barrel");
             AmmoCase = Content.Load<Texture2D>("AmmoCase");
-            FuelPtr = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, 320, FuelPosition);
             Player = new Player(Content.Load<Texture2D>("Plane"), ExplosionEffect, Content.Load<Texture2D>("Plane_Blinking"));
             Player.ProjectileTexture = Content.Load<Texture2D>("Projectile");
             Player.ProjectileMachineGunTexture = Content.Load<Texture2D>("ProjectileMachinegun");
+
+            FuelPtr = new FuelPtr(Content.Load<Texture2D>("Fuel_Level"), Content.Load<Texture2D>("Fuel_UI"), 64, Player.MaxFuel, FuelPosition);
 
             for (int i = 1; i <= 3; i++) {
                 HelicopterTextures.Add(Content.Load<Texture2D>($"Helicopter_{i}_LeftSide"));
@@ -133,6 +137,14 @@ namespace River_Ride___MG
             for (int i = 0; i < HelicopterTextures.Count; i++) {
                 EnemyDictionary.Add(i + PlaneEnemyTextures.Count, new Enemy(HelicopterTextures[i], ExplosionEffect, i % 2 == 0 ? Enemy.EnemyType.HelicopterLeftSide : Enemy.EnemyType.HelicopterRightSide));
             }
+
+            Content.RootDirectory = "Content/Environment";
+            EntitiesTextuers.Add(Content.Load<Texture2D>("Seeds"));
+            for (int i = 0; i < 2; i++)
+                EntitiesTextuers.Add(Content.Load<Texture2D>($"Rock_{i}"));
+            for (int i = 0; i < 3; i++)
+                EntitiesTextuers.Add(Content.Load<Texture2D>($"Tree_{i}"));
+            Content.RootDirectory = "Content";
             #endregion
 
             #region Events
@@ -143,6 +155,7 @@ namespace River_Ride___MG
             eventManager.OnEnemySpawnTick += InstantiateEnemy;
             eventManager.OnFuelBarrelSpawnTick += InstantiateFuelBarrel;
             eventManager.OnAmmoCaseSpawnTick += InstantiateAmmoCase;
+            eventManager.OnEntitySpawnTick += InstantiateEntity;
             eventManager.OnRestartGame += RestartGame;
             #endregion
 
@@ -156,12 +169,13 @@ namespace River_Ride___MG
             #region Updating
             KeyboardState InputKey = Keyboard.GetState();
             eventManager.Update(gameTime, InputKey);
+            audioManager.UpdateTheme(gameTime);
             #endregion
 
             if (eventManager.gameState == EventManager.GameState.Game) {
                 #region Update Game States
                 Player.UpdatePlayer(InputKey, gameTime);
-                FuelPtr.UpdateFuelSpend();
+                FuelPtr.UpdateFuelSpend(Player);
                 FuelPtr.IsAlive = Player.IsAlive;
 
                 foreach (Background item in Backgrounds)
@@ -176,17 +190,23 @@ namespace River_Ride___MG
                 foreach (FuelBarrel item in FuelBarrels)
                     item.Update(gameTime);
 
+                foreach (Entity item in Entities)
+                    item.Update(gameTime);
+
                 foreach (AmmoCase item in AmmoCases)
                     item.Update(gameTime);
 
                 if (tempLevel >= 2500) {
-                    tempLevel = 0;
+                    tempLevel -= 2500;
                     Level++;
                 }
                 #endregion
 
                 #region Audio Update
-                audioManager.FlyInstance.Play();
+                if (Player.IsAlive)
+                    audioManager.FlyInstance.Play();
+                else
+                    audioManager.FlyInstance.Stop();
                 #endregion
 
                 #region Collisions
@@ -194,10 +214,10 @@ namespace River_Ride___MG
                     for (int i = 0; i < Enemies.Count; i++) {
                         if (Projectiles[y].CheckCollision(Enemies[i]) && !Enemies[i].IsExploding) {
                             Enemies[i].IsExploding = true;
+                            audioManager.PlaySound("Explosion");
                             if (!Enemies[i].IsExploded) {
                                 AddScore(Points[Random.Next(Points.Count)]);
                                 Projectiles.RemoveAt(y);
-                                audioManager.PlaySound("Hit");
                                 break;
                             }
                         }
@@ -208,9 +228,9 @@ namespace River_Ride___MG
                     for (int i = 0; i < FuelBarrels.Count; i++) {
                         if (Projectiles[y].CheckCollision(FuelBarrels[i]) && !FuelBarrels[i].IsExploding) {
                             FuelBarrels[i].IsExploding = true;
+                            audioManager.PlaySound("Explosion"); 
                             if (!FuelBarrels[i].IsExploded) {
                                 Projectiles.RemoveAt(y);
-                                audioManager.PlaySound("Hit");
                                 break;
                             }
                         }
@@ -239,9 +259,10 @@ namespace River_Ride___MG
                             Player.DealDamage();
                         }
 
-                        if (Player.IsAlive)
+                        if (Player.IsAlive) {
                             Enemies[i].IsExploding = true;
-                        audioManager.PlaySound("Hit");
+                            audioManager.PlaySound("Explosion");
+                        }
                     }
                 }
 
@@ -341,6 +362,9 @@ namespace River_Ride___MG
                     foreach (AmmoCase item in AmmoCases) 
                         item.Draw(_spriteBatch);
 
+                    foreach (Entity item in Entities)
+                        item.Draw(_spriteBatch);
+
                     foreach (Projectile item in Projectiles) {
                         item.Draw(_spriteBatch);
                         //_spriteBatch.Draw(item.texture, item.position, Color.White);
@@ -435,6 +459,11 @@ namespace River_Ride___MG
             if (eventManager.gameState == EventManager.GameState.Game && Player.IsAlive)
                 AmmoCases.Add(new AmmoCase(AmmoCase));
         }
+        
+        protected void InstantiateEntity() {
+            if (eventManager.gameState == EventManager.GameState.Game && Player.IsAlive)
+                Entities.Add(new Entity(EntitiesTextuers[Random.Next(EntitiesTextuers.Count)]));
+        }
 
         float OverallBlinkTime, BlinkTimes = 2, BlinkTime, BlinkDelay = 500f; 
         protected void StartBlinkingGameOver(GameTime gameTime) {
@@ -467,6 +496,7 @@ namespace River_Ride___MG
             Player.IsAlive = true;
             Player.IsImmunity = false;
             Player.MachinegunMagazine = Player.MachinegunMagazineAtStart;
+            FuelPtr.position.X = Player.MaxFuel;
             OverallBlinkTime = 0;
             BlinkTime = 0;
         }
@@ -505,11 +535,32 @@ namespace River_Ride___MG
             }
         }
 
-        public static void SetSpeed(float speed) {
+        public static void SetSpeed(int speed) {
             BackgroundMovementSpeed = 4f + speed;
             FallingObjectMovementSpeed = 4f + speed;
             EnemyMovementSpeed = 5f + speed;
-            FuelSpeed = 0.25f + (speed / 10);
+            FuelSpeed = 0.25f + ((float) speed / 10);
+
+            int[,] Array = {
+                { 600, 2300, } ,
+                { 600, 1000, } ,
+                { 7000, 8500, }
+            };
+
+            if (speed < 0) {
+                eventManager.EnemyRandomArray = new int[] { Array[0, 0] * Math.Abs(speed), Array[0, 1] * Math.Abs(speed) };
+                eventManager.FuelRandomArray = new int[] { Array[1, 0] * Math.Abs(speed), Array[1, 1] * Math.Abs(speed) };
+                eventManager.AmmoRandomArray = new int[] { Array[2, 0] * Math.Abs(speed), Array[2, 1] * Math.Abs(speed) };
+            } else if (speed > 0) {
+                eventManager.EnemyRandomArray = new int[] { Array[0, 0] / Math.Abs(speed), Array[0, 1] / Math.Abs(speed) };
+                eventManager.FuelRandomArray = new int[] { Array[1, 0] / Math.Abs(speed), Array[1, 1] / Math.Abs(speed) };
+                eventManager.AmmoRandomArray = new int[] { Array[2, 0] / Math.Abs(speed), Array[2, 1] / Math.Abs(speed) };
+            } else {
+                eventManager.EnemyRandomArray = new int[] { Array[0, 0], Array[0, 1] };
+                eventManager.FuelRandomArray = new int[] { Array[1, 0], Array[1, 1] };
+                eventManager.AmmoRandomArray = new int[] { Array[2, 0], Array[2, 1] };
+            }
+
         }
     }
 }

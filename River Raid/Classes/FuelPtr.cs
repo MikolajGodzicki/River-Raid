@@ -10,7 +10,6 @@ namespace River_Raid {
         public Texture2D Fuel_UI;
         public int minFuel, maxFuel;
 
-        bool isExploded = false;
         public bool IsAlive = true;
         public event Action OnFuelEmpty;
 
@@ -22,13 +21,12 @@ namespace River_Raid {
             this.position = position;
         }
 
-        public void UpdateFuelSpend() {
-            if (!isExploded) {
-                if (position.X > minFuel & IsAlive)
+        public void UpdateFuelSpend(Player player) {
+            if (player.IsAlive) {
+                if (position.X > minFuel & player.IsAlive)
                     position.X -= Main.FuelSpeed;
                 else {
                     OnFuelEmpty?.Invoke();
-                    isExploded = true;
                 }
             }
         }
