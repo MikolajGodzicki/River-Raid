@@ -1,41 +1,37 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using River_Raid.Core;
+using River_Raid.GameObjects.Interactable;
 using River_Ride___MG;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace River_Raid.GameObjects.Interactable
-{
-    class Enemy : ExplodeableGameObject
-    {
-        public EnemyType enemyType;
-        public enum EnemyType
-        {
-            Plane,
-            HelicopterLeftSide,
-            HelicopterRightSide
-        }
-        public Enemy(Texture2D texture, Texture2D ExplodeTexture, EnemyType enemyType = EnemyType.Plane)
-        {
+namespace River_Raid.GameObjects.Enemy {
+    class Enemy : ExplodeableGameObject {
+        private EnemyType enemyType;
+        public EnemyType EnemyType { get => enemyType; set => enemyType = value; }
+
+        public Enemy(Texture2D texture, Texture2D explodeTexture, EnemyType enemyType = EnemyType.Plane) {
             this.texture = texture;
-            this.ExplodeTexture = ExplodeTexture;
-            this.enemyType = enemyType;
+            ExplodeTexture = explodeTexture;
+            EnemyType = enemyType;
 
-            if (enemyType == EnemyType.HelicopterLeftSide)
-                position.X = -30f;
-            else if (enemyType == EnemyType.HelicopterRightSide)
-                position.X = 1024f;
-            else
-                position.X = new Random().Next(Main.MinimumObjectPos, Main.MaximumObjectPos);
+            InitPosition();
+
             FrameCount = 4;
         }
 
-        public void Update(GameTime gameTime, Player player)
-        {
-            switch (enemyType)
-            {
+        private void InitPosition() {
+
+            if (EnemyType == EnemyType.HelicopterLeftSide)
+                position.X = -30f;
+            else if (EnemyType == EnemyType.HelicopterRightSide)
+                position.X = 1024f;
+            else
+                position.X = new Random().Next(Main.MinimumObjectPos, Main.MaximumObjectPos);
+        }
+
+        public void Update(GameTime gameTime, Player player) {
+            switch (EnemyType) {
                 case EnemyType.Plane:
                     if (!IsExploding)
                         position.Y += Main.EnemyMovementSpeed;
@@ -43,23 +39,19 @@ namespace River_Raid.GameObjects.Interactable
                         position.Y += Main.BackgroundMovementSpeed;
                     break;
                 case EnemyType.HelicopterLeftSide:
-                    if (!IsExploding)
-                    {
+                    if (!IsExploding) {
                         if (player.IsAlive)
                             position.Y += Main.EnemyMovementSpeed - 1;
                         position.X += Main.EnemyHelicopterMovementSpeed - 2;
-                    }
-                    else
+                    } else
                         position.Y += Main.BackgroundMovementSpeed;
                     break;
                 case EnemyType.HelicopterRightSide:
-                    if (!IsExploding)
-                    {
+                    if (!IsExploding) {
                         if (player.IsAlive)
                             position.Y += Main.EnemyMovementSpeed - 1;
                         position.X -= Main.EnemyHelicopterMovementSpeed - 2;
-                    }
-                    else
+                    } else
                         position.Y += Main.BackgroundMovementSpeed;
                     break;
                 default:

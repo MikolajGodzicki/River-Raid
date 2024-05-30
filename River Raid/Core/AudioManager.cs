@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using System;
+using System.Collections.Generic;
 
-namespace River_Raid.Core
-{
-    public class AudioManager
-    {
+namespace River_Raid.Core {
+    public class AudioManager {
         List<Song> Themes = new List<Song>();
 
         private Dictionary<string, SoundEffect> SoundEffects;
@@ -22,8 +19,7 @@ namespace River_Raid.Core
 
         public SoundEffectInstance FlyInstance;
 
-        public AudioManager(ContentManager Content)
-        {
+        public AudioManager(ContentManager Content) {
             content = Content;
 
             content.RootDirectory = "Content/Audio";
@@ -73,32 +69,22 @@ namespace River_Raid.Core
 
         private T LoadAudioContent<T>(string audio) => content.Load<T>(audio);
 
-        public void PlaySound(string Type)
-        {
-            if (!SoundEffects.ContainsKey(Type))
-            {
+        public void PlaySound(string Type) {
+            if (!SoundEffects.ContainsKey(Type)) {
                 return;
             }
 
             SoundEffects[Type].Play();
         }
 
-        public void Update(KeyboardState input)
-        {
-            if (input.IsKeyDown(Keys.OemOpenBrackets) && SoundEffect.MasterVolume > 0.1f)
-            {
+        public void Update(KeyboardState input) {
+            if (input.IsKeyDown(Keys.OemOpenBrackets) && SoundEffect.MasterVolume > 0.1f) {
                 SetSoundEffectMasterVolume(val: -0.1f);
-            }
-            else if (input.IsKeyDown(Keys.OemCloseBrackets) && SoundEffect.MasterVolume < 0.9f)
-            {
+            } else if (input.IsKeyDown(Keys.OemCloseBrackets) && SoundEffect.MasterVolume < 0.9f) {
                 SetSoundEffectMasterVolume(val: 0.1f);
-            }
-            else if (input.IsKeyDown(Keys.M))
-            {
+            } else if (input.IsKeyDown(Keys.M)) {
                 SetSoundEffectMasterVolume(true);
-            }
-            else if (input.IsKeyDown(Keys.J))
-            {
+            } else if (input.IsKeyDown(Keys.J)) {
                 if (MediaPlayer.State == MediaState.Paused)
                     MediaPlayer.Resume();
                 else
@@ -106,10 +92,8 @@ namespace River_Raid.Core
             }
         }
 
-        private void SetSoundEffectMasterVolume(bool mute = false, float val = 0f)
-        {
-            if (mute)
-            {
+        private void SetSoundEffectMasterVolume(bool mute = false, float val = 0f) {
+            if (mute) {
                 SoundEffect.MasterVolume = 0;
                 return;
             }
@@ -117,11 +101,9 @@ namespace River_Raid.Core
             SoundEffect.MasterVolume += val;
         }
 
-        public void UpdateTheme(GameTime gameTime)
-        {
+        public void UpdateTheme(GameTime gameTime) {
             currentTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            if (currentTime >= countDuration)
-            {
+            if (currentTime >= countDuration) {
                 int random = new Random().Next(Themes.Count);
                 countDuration = Themes[random].Duration.Minutes * 60 + Themes[random].Duration.Seconds;
                 MediaPlayer.Play(Themes[random]);
