@@ -1,6 +1,6 @@
 # River-Raid
 
-An educational project for Application Programming.
+An educational project for school purposes.
 
 This game includes many features such as:
 - Shooting from two cannons
