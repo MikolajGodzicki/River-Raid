@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace River_Raid.Classes {
-    class ExplodeableGameObject : GameObject {
+namespace River_Raid.Core
+{
+    class ExplodeableGameObject : GameObject
+    {
         public Texture2D ExplodeTexture;
         public bool IsExploding, IsExploded;
         public bool IsAlive = true;
@@ -14,15 +16,21 @@ namespace River_Raid.Classes {
         int ExplosionAnimationFrame;
         public Rectangle ExplodeAnimation;
 
-        public void Update(GameTime gameTime, int FrameCountX = 4, int ExplosionFrameCountX = 4) {
-            if (IsExploding) {
+        public void Update(GameTime gameTime, int FrameCountX = 4, int ExplosionFrameCountX = 4)
+        {
+            if (IsExploding)
+            {
                 ExplosionAnimationTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (ExplosionAnimationTime >= ExplosionAnimationDelay) {
-                    if (ExplosionAnimationFrame >= ExplosionFrameCountX - 1) {
+                if (ExplosionAnimationTime >= ExplosionAnimationDelay)
+                {
+                    if (ExplosionAnimationFrame >= ExplosionFrameCountX - 1)
+                    {
                         IsExploded = true;
                         IsExploding = false;
                         ExplosionAnimationFrame = 0;
-                    } else {
+                    }
+                    else
+                    {
                         ExplosionAnimationFrame++;
                     }
 
@@ -35,7 +43,8 @@ namespace River_Raid.Classes {
             base.Update(gameTime, FrameCountX);
         }
 
-        public void Explode(SpriteBatch spriteBatch, Vector2 OffsetPosition = new Vector2(), float scale = 1f) {
+        public void Explode(SpriteBatch spriteBatch, Vector2 OffsetPosition = new Vector2(), float scale = 1f)
+        {
             spriteBatch.Draw(ExplodeTexture, position - OffsetPosition, ExplodeAnimation, Color.White, 0f, new Vector2(), scale, SpriteEffects.None, 0f);
         }
     }

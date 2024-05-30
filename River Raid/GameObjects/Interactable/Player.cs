@@ -1,13 +1,16 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using River_Raid.Core;
 using River_Ride___MG;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace River_Raid.Classes {
-    class Player : ExplodeableGameObject {
+namespace River_Raid.GameObjects.Interactable
+{
+    class Player : ExplodeableGameObject
+    {
         bool CanGoLeft = true, CanGoRight = true;
         public Texture2D NormalTexture, BlinkingTexture;
         public bool IsImmunity;
@@ -23,10 +26,11 @@ namespace River_Raid.Classes {
 
         public event Action<Texture2D> OnFireButtonClick, OnFireMachineGunButtonClick;
 
-        public Player(Texture2D NormalTexture, Texture2D ExplodeTexture, Texture2D BlinkingTexture) {
+        public Player(Texture2D NormalTexture, Texture2D ExplodeTexture, Texture2D BlinkingTexture)
+        {
             this.NormalTexture = NormalTexture;
-            this.texture = this.NormalTexture;
-            this.position = new Vector2(500f);
+            texture = this.NormalTexture;
+            position = new Vector2(500f);
             this.ExplodeTexture = ExplodeTexture;
             this.BlinkingTexture = BlinkingTexture;
             HealthAtStart = Health;
@@ -35,28 +39,40 @@ namespace River_Raid.Classes {
             MovementSpeed = 5;
             FrameCount = 4;
         }
-        public void UpdatePlayer(KeyboardState InputKey, GameTime gameTime) {
-            if (IsAlive) {
-                if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft) {
+        public void UpdatePlayer(KeyboardState InputKey, GameTime gameTime)
+        {
+            if (IsAlive)
+            {
+                if ((InputKey.IsKeyDown(Keys.A) || InputKey.IsKeyDown(Keys.Left)) && CanGoLeft)
+                {
                     position.X -= MovementSpeed;
-                } else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight) {
+                }
+                else if ((InputKey.IsKeyDown(Keys.D) || InputKey.IsKeyDown(Keys.Right)) && CanGoRight)
+                {
                     position.X += MovementSpeed;
                 }
 
-                if (InputKey.IsKeyDown(Keys.W) || InputKey.IsKeyDown(Keys.Up)) {
+                if (InputKey.IsKeyDown(Keys.W) || InputKey.IsKeyDown(Keys.Up))
+                {
                     Main.SetSpeed(2);
                     ScoreAdding = 10;
-                } else if (InputKey.IsKeyDown(Keys.S) || InputKey.IsKeyDown(Keys.Down)) {
+                }
+                else if (InputKey.IsKeyDown(Keys.S) || InputKey.IsKeyDown(Keys.Down))
+                {
                     Main.SetSpeed(-2);
                     ScoreAdding = 2;
-                } else {
+                }
+                else
+                {
                     Main.SetSpeed(0);
                     ScoreAdding = 5;
                 }
 
                 ProjectileTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (ProjectileTime >= ProjectileDelay) {
-                    if (InputKey.IsKeyDown(Keys.Space)) {
+                if (ProjectileTime >= ProjectileDelay)
+                {
+                    if (InputKey.IsKeyDown(Keys.Space))
+                    {
                         OnFireButtonClick?.Invoke(ProjectileTexture);
                         Main.audioManager.PlaySound("Shoot");
                         ProjectileTime = 0;
@@ -64,39 +80,50 @@ namespace River_Raid.Classes {
                 }
 
                 MachinegunTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (MachinegunTime >= MachinegunDelay) {
-                    if (InputKey.IsKeyDown(Keys.V)) {
-                        if (MachinegunMagazine > 0) { 
+                if (MachinegunTime >= MachinegunDelay)
+                {
+                    if (InputKey.IsKeyDown(Keys.V))
+                    {
+                        if (MachinegunMagazine > 0)
+                        {
                             OnFireMachineGunButtonClick?.Invoke(ProjectileMachineGunTexture);
                             MachinegunMagazine--;
                             Main.audioManager.PlaySound("MachineGun");
-                        } else {
+                        }
+                        else
+                        {
                             Main.audioManager.PlaySound("EmptyWeapon");
                         }
                         MachinegunTime = 0;
                     }
                 }
 
-                if (Health <= 0) {
+                if (Health <= 0)
+                {
                     IsAlive = false;
                     ExplodePlane();
                 }
 
                 ImmunityTime += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (IsImmunity && ImmunityTime >= ImmunityDelay) {
+                if (IsImmunity && ImmunityTime >= ImmunityDelay)
+                {
                     IsImmunity = false;
                 }
-                if (IsImmunity) {
+                if (IsImmunity)
+                {
                     AnimationDelay = tempAnimationDelay * 3;
-                } else {
+                }
+                else
+                {
                     AnimationDelay = tempAnimationDelay;
                 }
             }
 
-            base.Update(gameTime);
+            Update(gameTime);
         }
 
-        public void ExplodePlane() {
+        public void ExplodePlane()
+        {
             AnimationFrame = 0;
             IsExploding = true;
             IsAlive = false;
@@ -105,16 +132,18 @@ namespace River_Raid.Classes {
             Main.audioManager.PlaySound("Explosion");
         }
 
-        public void DealDamage(int amount = 1) {
+        public void DealDamage(int amount = 1)
+        {
             Health -= amount;
             IsImmunity = true;
             ImmunityTime = 0;
         }
 
-        public void AddAmmo(int amount) {
+        public void AddAmmo(int amount)
+        {
             int tempAmount = amount;
             if (MachinegunMagazine + amount > 90)
-                tempAmount -= (MachinegunMagazine + amount) - 90;
+                tempAmount -= MachinegunMagazine + amount - 90;
             MachinegunMagazine += tempAmount;
         }
     }

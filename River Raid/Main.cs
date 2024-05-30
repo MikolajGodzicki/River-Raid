@@ -5,10 +5,13 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using River_Raid;
-using River_Raid.Classes;
 using System.Text;
 using System.Linq;
+using River_Raid.Core;
+using River_Raid.GameObjects;
+using River_Raid.GameObjects.Interactable;
+using River_Raid.GameObjects.Fuel;
+using River_Raid.StateSystem;
 
 namespace River_Ride___MG
 {
@@ -172,7 +175,7 @@ namespace River_Ride___MG
             audioManager.UpdateTheme(gameTime);
             #endregion
 
-            if (eventManager.gameState == EventManager.GameState.Game) {
+            if (eventManager.gameState == GameState.Game) {
                 #region Update Game States
                 Player.UpdatePlayer(InputKey, gameTime);
                 FuelPtr.UpdateFuelSpend(Player);
@@ -335,7 +338,7 @@ namespace River_Ride___MG
 
         protected override void Draw(GameTime gameTime) {
             switch (eventManager.gameState) {
-                case EventManager.GameState.Menu:
+                case GameState.Menu:
                     GraphicsDevice.Clear(Color.Black);
                     _spriteBatch.Begin();
                     string[] MenuText = { "Kliknij [ENTER] aby ruszyć", "Spacja - Strzał", "V - Strzał z Machine Gun'a" };
@@ -346,7 +349,7 @@ namespace River_Ride___MG
                     }
                     _spriteBatch.End();
                     break;
-                case EventManager.GameState.Game:
+                case GameState.Game:
                     GraphicsDevice.Clear(Color.White);
                     _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
@@ -414,7 +417,7 @@ namespace River_Ride___MG
 
                     _spriteBatch.End();
                     break;
-                case EventManager.GameState.EndGame:
+                case GameState.EndGame:
                     GraphicsDevice.Clear(Color.Black);
                     _spriteBatch.Begin();
                     string EndGameName = "Rozbiłeś się";
@@ -445,29 +448,29 @@ namespace River_Ride___MG
         }
 
         protected void InstantiateProjectile(Texture2D texture) {
-            if (eventManager.gameState == EventManager.GameState.Game && Player.IsAlive)
+            if (eventManager.gameState == GameState.Game && Player.IsAlive)
                 Projectiles.Add(new Projectile(texture, Player.position + new Vector2(27f, 0f)));
         }
 
         protected void InstantiateEnemy() {
-            if (eventManager.gameState == EventManager.GameState.Game && Player.IsAlive) {
+            if (eventManager.gameState == GameState.Game && Player.IsAlive) {
                 int i = Random.Next(EnemyDictionary.Count);
                 Enemies.Add(new Enemy(EnemyDictionary[i].texture, EnemyDictionary[i].ExplodeTexture, EnemyDictionary[i].enemyType));
             }
         }
 
         protected void InstantiateFuelBarrel() {
-            if (eventManager.gameState == EventManager.GameState.Game && Player.IsAlive)
+            if (eventManager.gameState == GameState.Game && Player.IsAlive)
                 FuelBarrels.Add(new FuelBarrel(FuelBarrel, ExplosionEffect));
         }
 
         protected void InstantiateAmmoCase() {
-            if (eventManager.gameState == EventManager.GameState.Game && Player.IsAlive)
+            if (eventManager.gameState == GameState.Game && Player.IsAlive)
                 AmmoCases.Add(new AmmoCase(AmmoCase));
         }
         
         protected void InstantiateEntity() {
-            if (eventManager.gameState == EventManager.GameState.Game && Player.IsAlive)
+            if (eventManager.gameState == GameState.Game && Player.IsAlive)
                 Entities.Add(new Entity(EntitiesTextuers[Random.Next(EntitiesTextuers.Count)]));
         }
 
@@ -485,11 +488,11 @@ namespace River_Ride___MG
                 }
             } else {
                 SaveAndLoadScores();
-                ChangeState(out eventManager.gameState, EventManager.GameState.EndGame);
+                ChangeState(out eventManager.gameState, GameState.EndGame);
             }
         }
 
-        public void ChangeState(out EventManager.GameState gameState, EventManager.GameState gameStateToChange){
+        public void ChangeState(out GameState gameState, GameState gameStateToChange){
             gameState = gameStateToChange;
         }
 
