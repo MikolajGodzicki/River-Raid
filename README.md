@@ -1,22 +1,20 @@
 # River-Raid
 
-Projekt na Programowanie Aplikacji stworzony w celach edukacyjnych.
+An educational project for school purposes.
 
-## Gra posiada wiele funkcji takich jak: 
-* Strzelanie z dwóch dział,
-* Losowe generowania świata
-* Wiele przeciwników
-* W pełni funkcjonalny system Paliwa i wiele więcej!
+This game includes many features such as:
+- Shooting from two cannons
+- Random world generation
+- Multiple enemies
+- Fully functional fuel system and much more!
 
-## W przypadku problemów z odpaleniem gry należy:
-* Zainstalować następujące czcionki:
-```
-https://www.dafont.com/8-bit-arcade.font
-https://opengameart.org/content/lanapixel-localization-friendly-pixel-font
-```
-* Zainstalować .NET Core 3.1
-```
-https://dotnet.microsoft.com/en-us/download/dotnet/3.1
-```
+## Troubleshooting
 
-# Miłego grania!
+If you encounter issues running the game, please:
+1. Install the following fonts:
+   - [8-bit Arcade](https://www.dafont.com/8-bit-arcade.font)
+   - [LanaPixel Localization Friendly Pixel Font](https://opengameart.org/content/lanapixel-localization-friendly-pixel-font)
+2. Install .NET Core 3.1:
+   - [Download .NET Core 3.1](https://dotnet.microsoft.com/en-us/download/dotnet/3.1)
+
+Happy gaming!
