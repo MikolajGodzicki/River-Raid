@@ -534,7 +534,7 @@ namespace River_Ride___MG {
                 Entities.Add(new Entity(EntitiesTextuers[Random.Next(EntitiesTextuers.Count)]));
         }
 
-        private bool IsGameAndPlayerIsAlive() => IsGameAndPlayerIsAlive();
+        private bool IsGameAndPlayerIsAlive() => eventManager.gameState == GameState.Game && Player.IsAlive;
 
         protected void StartBlinkingGameOver(GameTime gameTime) {
             if (OverallBlinkTime < BlinkTimes * BlinkDelay * 2) {
